@@ -58,6 +58,8 @@ exports.handler = async (event) => {
       empresa,
       dueDate
     });
+    const firstPayment = await getFirstSubscriptionPayment(config, subscription.id);
+    const invoiceUrl = getPaymentLink(firstPayment) || getPaymentLink(subscription);
 
     const subscriptionPayload = {
       empresa_id: empresa.id,
@@ -66,6 +68,7 @@ exports.handler = async (event) => {
       status: subscription.status || "pendente",
       valor: PLAN_VALUE,
       proximo_vencimento: subscription.nextDueDate || dueDate,
+      invoice_url: invoiceUrl,
       updated_at: new Date().toISOString()
     };
 
@@ -84,9 +87,10 @@ exports.handler = async (event) => {
       ok: true,
       customerId,
       subscriptionId: subscription.id,
-      invoiceUrl: subscription.invoiceUrl || subscription.bankSlipUrl || null,
+      invoiceUrl,
       value: PLAN_VALUE,
-      dueDate: subscription.nextDueDate || dueDate
+      dueDate: subscription.nextDueDate || dueDate,
+      paymentId: firstPayment?.id || null
     });
   } catch (error) {
     console.error("Erro ao criar assinatura Asaas", {
@@ -187,6 +191,25 @@ async function createAsaasSubscription(config, data) {
   });
 }
 
+async function getFirstSubscriptionPayment(config, subscriptionId) {
+  if (!subscriptionId) return null;
+
+  try {
+    const response = await asaasRequest(
+      config,
+      `payments?subscription=${encodeURIComponent(subscriptionId)}&limit=1`
+    );
+
+    return response.data?.[0] || null;
+  } catch (error) {
+    console.warn("Nao foi possivel consultar a primeira cobranca da assinatura", {
+      message: error.message,
+      subscriptionId
+    });
+    return null;
+  }
+}
+
 async function asaasRequest(config, path, options = {}) {
   const response = await fetch(`${config.asaasApiBaseUrl.replace(/\/$/, "")}/${path}`, {
     method: options.method || "GET",
@@ -275,6 +298,10 @@ function removeEmpty(data) {
   return Object.fromEntries(
     Object.entries(data).filter(([, value]) => value !== null && value !== undefined && value !== "")
   );
+}
+
+function getPaymentLink(data = {}) {
+  return data.invoiceUrl || data.bankSlipUrl || data.paymentLink || data.checkoutUrl || null;
 }
 
 function json(statusCode, body) {
