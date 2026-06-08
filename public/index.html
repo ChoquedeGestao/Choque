@@ -3,60 +3,516 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Choque de Gestao | Plataforma Profissional</title>
+    <title>Choque de Gestao | Admin</title>
     <style>
       :root {
         color-scheme: light;
         font-family: Arial, Helvetica, sans-serif;
-        color: #132027;
-        background: #f4f7f8;
+        color: #16242c;
+        background: #f3f6f8;
+      }
+
+      * {
+        box-sizing: border-box;
       }
 
       body {
         margin: 0;
         min-height: 100vh;
+        background: #f3f6f8;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 260px 1fr;
+      }
+
+      .sidebar {
+        background: #0f2733;
+        color: #f8fbfc;
+        padding: 24px 18px;
+      }
+
+      .brand {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+        padding-bottom: 22px;
+        margin-bottom: 22px;
+      }
+
+      .brand-mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
         display: grid;
         place-items: center;
+        background: #f5b301;
+        color: #10222b;
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+
+      .brand h1 {
+        font-size: 20px;
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      .brand p,
+      .nav-note {
+        margin: 8px 0 0;
+        color: #a9bdc7;
+        line-height: 1.45;
+        font-size: 13px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 12px;
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.08);
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+
+      .main {
+        padding: 28px;
+        min-width: 0;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: flex-start;
+        margin-bottom: 24px;
+      }
+
+      .topbar h2 {
+        font-size: 28px;
+        margin: 0 0 6px;
+      }
+
+      .topbar p {
+        margin: 0;
+        color: #5c6b74;
+      }
+
+      .button {
+        border: 0;
+        border-radius: 7px;
+        background: #0f6f55;
+        color: #fff;
+        padding: 11px 15px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .button.secondary {
+        background: #e7eef1;
+        color: #263942;
+      }
+
+      .panel {
+        border: 1px solid #dbe4e8;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(17, 38, 49, 0.08);
+      }
+
+      .login {
+        max-width: 520px;
         padding: 24px;
       }
 
-      main {
-        width: min(760px, 100%);
-        border: 1px solid #d9e2e6;
-        border-radius: 10px;
-        background: #fff;
-        padding: 28px;
-        box-shadow: 0 18px 45px rgba(20, 34, 42, 0.12);
+      .login h2 {
+        margin: 0 0 8px;
       }
 
-      h1 {
-        margin: 0 0 10px;
-        font-size: 28px;
-      }
-
-      p {
-        margin: 0 0 14px;
-        color: #51636f;
+      .login p {
+        color: #5c6b74;
+        margin: 0 0 18px;
         line-height: 1.5;
       }
 
-      code {
-        display: block;
-        border: 1px solid #d9e2e6;
-        border-radius: 8px;
-        background: #f7fafb;
+      .field {
+        display: grid;
+        gap: 7px;
+        margin-bottom: 14px;
+      }
+
+      .field label {
+        font-weight: 700;
+        font-size: 13px;
+      }
+
+      .field input {
+        width: 100%;
+        border: 1px solid #cbd8dd;
+        border-radius: 7px;
         padding: 12px;
-        color: #0f4c81;
+      }
+
+      .status {
+        margin-top: 14px;
+        color: #8a4b0b;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .card span {
+        color: #5c6b74;
+        font-size: 13px;
+      }
+
+      .card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 26px;
+      }
+
+      .section {
+        margin-bottom: 18px;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 18px;
+        border-bottom: 1px solid #e2eaee;
+      }
+
+      .section-header h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .table-wrap {
         overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 12px 14px;
+        border-bottom: 1px solid #edf2f4;
+        vertical-align: top;
+        font-size: 14px;
+      }
+
+      th {
+        color: #536873;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0;
+        background: #f8fafb;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #e9eef2;
+        color: #41535c;
+      }
+
+      .badge.ativo {
+        background: #dff5ea;
+        color: #12643e;
+      }
+
+      .badge.pendente {
+        background: #fff1ce;
+        color: #835200;
+      }
+
+      .badge.inadimplente {
+        background: #ffe1dd;
+        color: #a12d21;
+      }
+
+      .empty {
+        padding: 22px 18px;
+        color: #5c6b74;
+      }
+
+      @media (max-width: 920px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          padding: 18px;
+        }
+
+        .main {
+          padding: 18px;
+        }
+
+        .topbar {
+          flex-direction: column;
+        }
+
+        .cards {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 560px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Projeto profissional iniciado</h1>
-      <p>Esta sera a versao SaaS multi-loja da plataforma Choque de Gestao.</p>
-      <p>Endpoint do webhook Asaas:</p>
-      <code>/.netlify/functions/asaas-webhook</code>
-    </main>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">CG</div>
+          <h1>Choque de Gestao</h1>
+          <p>Administracao da plataforma profissional.</p>
+        </div>
+        <div class="nav-item">Painel</div>
+        <p class="nav-note">Dados carregados do Supabase via funcoes Netlify.</p>
+      </aside>
+
+      <main class="main">
+        <section id="loginPanel" class="panel login">
+          <h2>Acesso administrativo</h2>
+          <p>Informe a senha administrativa configurada no Netlify para consultar empresas, pagamentos e logs.</p>
+          <form id="loginForm">
+            <div class="field">
+              <label for="adminToken">Senha administrativa</label>
+              <input id="adminToken" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="button" type="submit">Entrar</button>
+          </form>
+          <div id="loginStatus" class="status"></div>
+        </section>
+
+        <section id="dashboard" class="hidden">
+          <div class="topbar">
+            <div>
+              <h2>Painel administrativo</h2>
+              <p>Monitoramento das empresas assinantes, pagamentos e eventos recebidos do Asaas.</p>
+            </div>
+            <div>
+              <button id="refreshButton" class="button" type="button">Atualizar</button>
+              <button id="logoutButton" class="button secondary" type="button">Sair</button>
+            </div>
+          </div>
+
+          <div class="cards">
+            <article class="panel card">
+              <span>Empresas</span>
+              <strong id="companyCount">0</strong>
+            </article>
+            <article class="panel card">
+              <span>Ativas</span>
+              <strong id="activeCount">0</strong>
+            </article>
+            <article class="panel card">
+              <span>Pagamentos</span>
+              <strong id="paymentCount">0</strong>
+            </article>
+            <article class="panel card">
+              <span>Eventos Asaas</span>
+              <strong id="logCount">0</strong>
+            </article>
+          </div>
+
+          <section class="panel section">
+            <div class="section-header">
+              <h3>Empresas</h3>
+            </div>
+            <div id="companiesTable" class="table-wrap"></div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-header">
+              <h3>Pagamentos recentes</h3>
+            </div>
+            <div id="paymentsTable" class="table-wrap"></div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-header">
+              <h3>Logs do Asaas</h3>
+            </div>
+            <div id="logsTable" class="table-wrap"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const loginPanel = document.getElementById("loginPanel");
+      const dashboard = document.getElementById("dashboard");
+      const loginForm = document.getElementById("loginForm");
+      const loginStatus = document.getElementById("loginStatus");
+      const adminToken = document.getElementById("adminToken");
+      const refreshButton = document.getElementById("refreshButton");
+      const logoutButton = document.getElementById("logoutButton");
+      const tokenKey = "choque_admin_token";
+
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        sessionStorage.setItem(tokenKey, adminToken.value.trim());
+        await loadDashboard();
+      });
+
+      refreshButton.addEventListener("click", loadDashboard);
+      logoutButton.addEventListener("click", () => {
+        sessionStorage.removeItem(tokenKey);
+        dashboard.classList.add("hidden");
+        loginPanel.classList.remove("hidden");
+        adminToken.value = "";
+      });
+
+      if (sessionStorage.getItem(tokenKey)) {
+        loadDashboard();
+      }
+
+      async function loadDashboard() {
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) return;
+
+        loginStatus.textContent = "Carregando dados...";
+
+        try {
+          const response = await fetch("/.netlify/functions/admin-data", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel carregar o painel.");
+          }
+
+          loginPanel.classList.add("hidden");
+          dashboard.classList.remove("hidden");
+          loginStatus.textContent = "";
+          renderSummary(data.summary);
+          renderCompanies(data.empresas);
+          renderPayments(data.pagamentos);
+          renderLogs(data.webhook_logs);
+        } catch (error) {
+          loginPanel.classList.remove("hidden");
+          dashboard.classList.add("hidden");
+          loginStatus.textContent = error.message;
+        }
+      }
+
+      function renderSummary(summary) {
+        document.getElementById("companyCount").textContent = summary.empresas;
+        document.getElementById("activeCount").textContent = summary.ativas;
+        document.getElementById("paymentCount").textContent = summary.pagamentos;
+        document.getElementById("logCount").textContent = summary.logs;
+      }
+
+      function renderCompanies(rows) {
+        renderTable("companiesTable", rows, [
+          ["Nome", row => row.nome],
+          ["Status", row => `<span class="badge ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span>`],
+          ["Cliente Asaas", row => row.asaas_customer_id],
+          ["Email", row => row.email || "-"],
+          ["Atualizado", row => formatDate(row.updated_at)]
+        ]);
+      }
+
+      function renderPayments(rows) {
+        renderTable("paymentsTable", rows, [
+          ["Evento", row => row.evento],
+          ["Status", row => row.status || "-"],
+          ["Valor", row => formatMoney(row.valor)],
+          ["Pagamento Asaas", row => row.asaas_payment_id],
+          ["Criado em", row => formatDate(row.created_at)]
+        ]);
+      }
+
+      function renderLogs(rows) {
+        renderTable("logsTable", rows, [
+          ["Evento", row => row.evento],
+          ["Pagamento", row => row.asaas_payment_id || "-"],
+          ["Cliente", row => row.asaas_customer_id || "-"],
+          ["Recebido em", row => formatDate(row.created_at)]
+        ]);
+      }
+
+      function renderTable(targetId, rows, columns) {
+        const target = document.getElementById(targetId);
+        if (!rows.length) {
+          target.innerHTML = '<div class="empty">Nenhum registro encontrado.</div>';
+          return;
+        }
+
+        const header = columns.map(([label]) => `<th>${escapeHtml(label)}</th>`).join("");
+        const body = rows.map(row => {
+          return `<tr>${columns.map(([, value]) => `<td>${value(row) ?? "-"}</td>`).join("")}</tr>`;
+        }).join("");
+
+        target.innerHTML = `<table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function formatDate(value) {
+        if (!value) return "-";
+        return new Intl.DateTimeFormat("pt-BR", {
+          dateStyle: "short",
+          timeStyle: "short"
+        }).format(new Date(value));
+      }
+
+      function formatMoney(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "-";
+        return new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        }).format(number);
+      }
+    </script>
   </body>
 </html>
