@@ -171,6 +171,7 @@ async function upsertAssinatura(supabaseUrl, serviceRoleKey, data) {
     status: data.subscription.status || statusFromPayment(data.payment.status),
     valor: toNumber(data.subscription.value || data.payment.value),
     proximo_vencimento: data.subscription.nextDueDate || data.payment.dueDate || null,
+    invoice_url: getPaymentLink(data.subscription) || getPaymentLink(data.payment),
     updated_at: new Date().toISOString()
   };
 
@@ -195,6 +196,7 @@ async function upsertPagamento(supabaseUrl, serviceRoleKey, data) {
     valor: toNumber(data.payment.value),
     vencimento: data.payment.dueDate || null,
     pagamento_em: data.payment.paymentDate || data.payment.clientPaymentDate || null,
+    invoice_url: getPaymentLink(data.payment),
     payload: data.payload
   };
 
@@ -300,6 +302,10 @@ function statusFromPayment(status) {
 function toNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function getPaymentLink(data = {}) {
+  return data.invoiceUrl || data.bankSlipUrl || data.paymentLink || data.checkoutUrl || null;
 }
 
 function json(statusCode, body) {
