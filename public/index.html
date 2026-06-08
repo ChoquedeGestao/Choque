@@ -121,6 +121,11 @@
         color: #263942;
       }
 
+      .button.small {
+        padding: 7px 10px;
+        font-size: 12px;
+      }
+
       .panel {
         border: 1px solid #dbe4e8;
         border-radius: 8px;
@@ -174,6 +179,13 @@
         color: #8a4b0b;
         font-size: 14px;
         line-height: 1.45;
+      }
+
+      .inline-status {
+        display: block;
+        margin-top: 6px;
+        color: #8a4b0b;
+        font-size: 12px;
       }
 
       .hidden {
@@ -290,6 +302,11 @@
       .badge.inadimplente {
         background: #ffe1dd;
         color: #a12d21;
+      }
+
+      .badge.cancelado {
+        background: #eceff2;
+        color: #4e5d65;
       }
 
       .empty {
@@ -536,7 +553,8 @@
           ["Status", row => `<span class="badge ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span>`],
           ["Cliente Asaas", row => row.asaas_customer_id],
           ["Email", row => row.email || "-"],
-          ["Atualizado", row => formatDate(row.updated_at)]
+          ["Atualizado", row => formatDate(row.updated_at)],
+          ["Acoes", row => renderCompanyActions(row)]
         ]);
       }
 
@@ -604,6 +622,63 @@
           await loadDashboard();
         } catch (error) {
           companyFormStatus.textContent = error.message;
+        }
+      }
+
+      function renderCompanyActions(row) {
+        if (row.asaas_subscription_id) {
+          return `<span class="badge pendente">Assinatura criada</span>`;
+        }
+
+        if (row.status === "cancelado") {
+          return "-";
+        }
+
+        return `
+          <button class="button small" type="button" data-subscription-company="${escapeHtml(row.id)}">
+            Criar assinatura
+          </button>
+          <span class="inline-status" id="subscription-status-${escapeHtml(row.id)}"></span>
+        `;
+      }
+
+      document.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-subscription-company]");
+        if (!button) return;
+        await createSubscription(button.dataset.subscriptionCompany, button);
+      });
+
+      async function createSubscription(companyId, button) {
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) return;
+
+        const status = document.getElementById(`subscription-status-${companyId}`);
+        button.disabled = true;
+        if (status) status.textContent = "Criando assinatura...";
+
+        try {
+          const response = await fetch("/.netlify/functions/asaas-subscription", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ empresa_id: companyId })
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel criar a assinatura.");
+          }
+
+          if (data.invoiceUrl) {
+            window.open(data.invoiceUrl, "_blank", "noopener");
+          }
+
+          await loadDashboard();
+        } catch (error) {
+          button.disabled = false;
+          if (status) status.textContent = error.message;
         }
       }
 
