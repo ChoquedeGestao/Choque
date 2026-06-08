@@ -51,9 +51,9 @@ exports.handler = async (event) => {
 
   const summary = {
     event: eventName,
-    paymentId: payload.payment?.id,
-    subscriptionId: payload.subscription?.id || payload.payment?.subscription,
-    customerId: payload.customer?.id || payload.payment?.customer
+    paymentId: getObjectId(payload.payment),
+    subscriptionId: getObjectId(payload.subscription) || getObjectId(payload.payment?.subscription),
+    customerId: getObjectId(payload.customer) || getObjectId(payload.payment?.customer) || getObjectId(payload.subscription?.customer)
   };
 
   console.log("Asaas webhook recebido", summary);
@@ -91,7 +91,7 @@ async function persistAsaasEvent(eventName, payload, summary) {
 
   const payment = payload.payment || {};
   const subscription = payload.subscription || {};
-  const customerId = summary.customerId || null;
+  const customerId = summary.customerId || getObjectId(payment.customer) || getObjectId(subscription.customer) || null;
   const subscriptionId = summary.subscriptionId || subscription.id || null;
   const paymentId = summary.paymentId || null;
 
@@ -157,6 +157,7 @@ async function upsertEmpresa(supabaseUrl, serviceRoleKey, payload, customerId) {
 }
 
 async function upsertAssinatura(supabaseUrl, serviceRoleKey, data) {
+  const empresaId = data.empresaId || await findEmpresaIdByCustomer(supabaseUrl, serviceRoleKey, data.customerId);
   const existing = await selectOne(
     supabaseUrl,
     serviceRoleKey,
@@ -165,13 +166,13 @@ async function upsertAssinatura(supabaseUrl, serviceRoleKey, data) {
   );
 
   const payload = {
-    empresa_id: data.empresaId,
+    empresa_id: empresaId || existing?.empresa_id || null,
     asaas_subscription_id: data.subscriptionId,
-    asaas_customer_id: data.customerId,
+    asaas_customer_id: data.customerId || existing?.asaas_customer_id || null,
     status: data.subscription.status || statusFromPayment(data.payment.status),
     valor: toNumber(data.subscription.value || data.payment.value),
     proximo_vencimento: data.subscription.nextDueDate || data.payment.dueDate || null,
-    invoice_url: getPaymentLink(data.subscription) || getPaymentLink(data.payment),
+    invoice_url: getPaymentLink(data.subscription) || getPaymentLink(data.payment) || existing?.invoice_url || null,
     updated_at: new Date().toISOString()
   };
 
@@ -185,8 +186,9 @@ async function upsertAssinatura(supabaseUrl, serviceRoleKey, data) {
 }
 
 async function upsertPagamento(supabaseUrl, serviceRoleKey, data) {
+  const empresaId = data.empresaId || await findEmpresaIdByCustomer(supabaseUrl, serviceRoleKey, data.customerId);
   const payload = {
-    empresa_id: data.empresaId,
+    empresa_id: empresaId,
     assinatura_id: data.assinaturaId,
     asaas_payment_id: data.paymentId,
     asaas_customer_id: data.customerId,
@@ -213,6 +215,17 @@ async function upsertPagamento(supabaseUrl, serviceRoleKey, data) {
   }
 
   await patchRows(supabaseUrl, serviceRoleKey, "pagamentos", `id=eq.${existing.id}`, payload);
+}
+
+async function findEmpresaIdByCustomer(supabaseUrl, serviceRoleKey, customerId) {
+  if (!customerId) return null;
+  const empresa = await selectOne(
+    supabaseUrl,
+    serviceRoleKey,
+    "empresas",
+    `asaas_customer_id=eq.${encodeURIComponent(customerId)}`
+  );
+  return empresa?.id || null;
 }
 
 async function insertWebhookLog(supabaseUrl, serviceRoleKey, data) {
@@ -306,6 +319,12 @@ function toNumber(value) {
 
 function getPaymentLink(data = {}) {
   return data.invoiceUrl || data.bankSlipUrl || data.paymentLink || data.checkoutUrl || null;
+}
+
+function getObjectId(value) {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  return value.id || null;
 }
 
 function json(statusCode, body) {
