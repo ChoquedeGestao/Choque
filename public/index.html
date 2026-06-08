@@ -23,7 +23,8 @@
       }
 
       button,
-      input {
+      input,
+      select {
         font: inherit;
       }
 
@@ -160,6 +161,14 @@
         padding: 12px;
       }
 
+      .field select {
+        width: 100%;
+        border: 1px solid #cbd8dd;
+        border-radius: 7px;
+        padding: 12px;
+        background: #fff;
+      }
+
       .status {
         margin-top: 14px;
         color: #8a4b0b;
@@ -209,6 +218,25 @@
       .section-header h3 {
         margin: 0;
         font-size: 18px;
+      }
+
+      .company-form {
+        padding: 18px;
+        border-bottom: 1px solid #e2eaee;
+        background: #fbfcfd;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .form-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 4px;
       }
 
       .table-wrap {
@@ -289,6 +317,10 @@
         .cards {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
       }
 
       @media (max-width: 560px) {
@@ -358,7 +390,46 @@
           <section class="panel section">
             <div class="section-header">
               <h3>Empresas</h3>
+              <button id="toggleCompanyForm" class="button secondary" type="button">Nova empresa</button>
             </div>
+            <form id="companyForm" class="company-form hidden">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="companyName">Nome da empresa</label>
+                  <input id="companyName" name="nome" required>
+                </div>
+                <div class="field">
+                  <label for="companyResponsible">Responsavel</label>
+                  <input id="companyResponsible" name="responsavel">
+                </div>
+                <div class="field">
+                  <label for="companyEmail">E-mail</label>
+                  <input id="companyEmail" name="email" type="email">
+                </div>
+                <div class="field">
+                  <label for="companyPhone">WhatsApp</label>
+                  <input id="companyPhone" name="telefone" inputmode="tel">
+                </div>
+                <div class="field">
+                  <label for="companyDocument">CPF/CNPJ</label>
+                  <input id="companyDocument" name="documento" inputmode="numeric">
+                </div>
+                <div class="field">
+                  <label for="companyStatus">Status inicial</label>
+                  <select id="companyStatus" name="status">
+                    <option value="pendente">Pendente</option>
+                    <option value="ativo">Ativo</option>
+                    <option value="inadimplente">Inadimplente</option>
+                    <option value="cancelado">Cancelado</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button" type="submit">Salvar empresa</button>
+                <button id="cancelCompanyForm" class="button secondary" type="button">Cancelar</button>
+                <span id="companyFormStatus" class="status"></span>
+              </div>
+            </form>
             <div id="companiesTable" class="table-wrap"></div>
           </section>
 
@@ -387,6 +458,10 @@
       const adminToken = document.getElementById("adminToken");
       const refreshButton = document.getElementById("refreshButton");
       const logoutButton = document.getElementById("logoutButton");
+      const toggleCompanyForm = document.getElementById("toggleCompanyForm");
+      const companyForm = document.getElementById("companyForm");
+      const cancelCompanyForm = document.getElementById("cancelCompanyForm");
+      const companyFormStatus = document.getElementById("companyFormStatus");
       const tokenKey = "choque_admin_token";
 
       loginForm.addEventListener("submit", async (event) => {
@@ -396,6 +471,16 @@
       });
 
       refreshButton.addEventListener("click", loadDashboard);
+      toggleCompanyForm.addEventListener("click", () => {
+        companyForm.classList.toggle("hidden");
+        companyFormStatus.textContent = "";
+      });
+      cancelCompanyForm.addEventListener("click", () => {
+        companyForm.reset();
+        companyForm.classList.add("hidden");
+        companyFormStatus.textContent = "";
+      });
+      companyForm.addEventListener("submit", saveCompany);
       logoutButton.addEventListener("click", () => {
         sessionStorage.removeItem(tokenKey);
         dashboard.classList.add("hidden");
@@ -447,6 +532,7 @@
       function renderCompanies(rows) {
         renderTable("companiesTable", rows, [
           ["Nome", row => row.nome],
+          ["Responsavel", row => row.responsavel || "-"],
           ["Status", row => `<span class="badge ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span>`],
           ["Cliente Asaas", row => row.asaas_customer_id],
           ["Email", row => row.email || "-"],
@@ -486,6 +572,39 @@
         }).join("");
 
         target.innerHTML = `<table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
+      }
+
+      async function saveCompany(event) {
+        event.preventDefault();
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) return;
+
+        companyFormStatus.textContent = "Salvando...";
+        const formData = new FormData(companyForm);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch("/.netlify/functions/admin-company", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel cadastrar a empresa.");
+          }
+
+          companyForm.reset();
+          companyForm.classList.add("hidden");
+          companyFormStatus.textContent = "";
+          await loadDashboard();
+        } catch (error) {
+          companyFormStatus.textContent = error.message;
+        }
       }
 
       function escapeHtml(value) {
