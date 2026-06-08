@@ -45,7 +45,8 @@ exports.handler = async (event) => {
         asaas_subscription_id: assinatura?.asaas_subscription_id || null,
         assinatura_status: assinatura?.status || null,
         assinatura_valor: assinatura?.valor || null,
-        assinatura_vencimento: assinatura?.proximo_vencimento || null
+        assinatura_vencimento: assinatura?.proximo_vencimento || null,
+        assinatura_invoice_url: assinatura?.invoice_url || null
       };
     });
 
