@@ -35,6 +35,19 @@ exports.handler = async (event) => {
       supabaseRequest(supabaseUrl, serviceRoleKey, "pagamentos?select=*&order=created_at.desc&limit=50"),
       supabaseRequest(supabaseUrl, serviceRoleKey, "webhook_logs?select=*&order=created_at.desc&limit=50")
     ]);
+    const subscriptionsByCompany = new Map(
+      assinaturas.map((assinatura) => [assinatura.empresa_id, assinatura])
+    );
+    const empresasComAssinatura = empresas.map((empresa) => {
+      const assinatura = subscriptionsByCompany.get(empresa.id);
+      return {
+        ...empresa,
+        asaas_subscription_id: assinatura?.asaas_subscription_id || null,
+        assinatura_status: assinatura?.status || null,
+        assinatura_valor: assinatura?.valor || null,
+        assinatura_vencimento: assinatura?.proximo_vencimento || null
+      };
+    });
 
     return json(200, {
       ok: true,
@@ -45,7 +58,7 @@ exports.handler = async (event) => {
         pagamentos: pagamentos.length,
         logs: webhookLogs.length
       },
-      empresas,
+      empresas: empresasComAssinatura,
       assinaturas,
       pagamentos,
       webhook_logs: webhookLogs
