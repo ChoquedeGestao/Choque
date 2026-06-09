@@ -138,12 +138,12 @@ async function upsertEmpresa(supabaseUrl, serviceRoleKey, payload, customerId) {
   const existing = await selectOne(supabaseUrl, serviceRoleKey, "empresas", `asaas_customer_id=eq.${encodeURIComponent(customerId)}`);
 
   const data = {
-    nome: customer.name || payment.customerName || subscription.customerName || `Cliente Asaas ${customerId}`,
-    email: customer.email || null,
-    telefone: customer.mobilePhone || customer.phone || null,
-    documento: customer.cpfCnpj || null,
+    nome: customer.name || payment.customerName || subscription.customerName || existing?.nome || `Cliente Asaas ${customerId}`,
+    email: customer.email || existing?.email || null,
+    telefone: customer.mobilePhone || customer.phone || existing?.telefone || null,
+    documento: customer.cpfCnpj || existing?.documento || null,
     asaas_customer_id: customerId,
-    status: statusFromEvent(payload.event, payment.status || subscription.status),
+    status: nextCompanyStatus(payload.event, payment.status || subscription.status, existing?.status),
     updated_at: new Date().toISOString()
   };
 
@@ -299,6 +299,16 @@ function statusFromEvent(eventName, fallback) {
   }
 
   return statusFromPayment(fallback);
+}
+
+function nextCompanyStatus(eventName, fallbackStatus, currentStatus) {
+  const nextStatus = statusFromEvent(eventName, fallbackStatus);
+
+  if (currentStatus === "ativo" && nextStatus === "pendente") {
+    return "ativo";
+  }
+
+  return nextStatus;
 }
 
 function statusFromPayment(status) {
