@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Choque de Gestao | Comece sua loja digital</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, Arial, Helvetica, sans-serif;
+        color: #12212b;
+        background: #f5f8fb;
+        --ink: #102733;
+        --muted: #5b6c76;
+        --blue: #0e46d8;
+        --green: #0e7a5f;
+        --yellow: #f7bd16;
+        --line: #dce7ec;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #f5f8fb;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        min-height: 100vh;
+      }
+
+      .hero {
+        min-height: 92vh;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+        align-items: center;
+        gap: 42px;
+        padding: 36px clamp(20px, 5vw, 76px) 54px;
+        background:
+          linear-gradient(115deg, rgba(14, 70, 216, 0.08), rgba(14, 122, 95, 0.05)),
+          #f5f8fb;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 34px;
+      }
+
+      .brand-mark {
+        width: 46px;
+        height: 46px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: var(--yellow);
+        color: var(--ink);
+        font-weight: 900;
+      }
+
+      .brand strong {
+        display: block;
+        font-size: 18px;
+      }
+
+      .brand span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      h1 {
+        max-width: 780px;
+        margin: 0;
+        font-size: clamp(38px, 6vw, 74px);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 640px;
+        margin: 24px 0 0;
+        color: #40535e;
+        font-size: clamp(18px, 2vw, 22px);
+        line-height: 1.45;
+      }
+
+      .proof {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        max-width: 720px;
+        margin-top: 34px;
+      }
+
+      .proof-card {
+        min-height: 108px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.82);
+        padding: 16px;
+        box-shadow: 0 14px 34px rgba(16, 39, 51, 0.08);
+      }
+
+      .proof-card strong {
+        display: block;
+        font-size: 22px;
+        color: var(--ink);
+      }
+
+      .proof-card span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.35;
+        font-size: 13px;
+      }
+
+      .mockup {
+        margin-top: 34px;
+        border: 1px solid #cfdde4;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 26px 60px rgba(16, 39, 51, 0.18);
+      }
+
+      .mockup-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--ink);
+        color: #fff;
+        padding: 12px 14px;
+        font-weight: 800;
+      }
+
+      .mockup-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1px;
+        background: #e3edf2;
+      }
+
+      .product-tile {
+        min-height: 132px;
+        background: #fff;
+        padding: 14px;
+        display: grid;
+        align-content: end;
+      }
+
+      .product-image {
+        height: 52px;
+        border-radius: 7px;
+        margin-bottom: 14px;
+        background:
+          radial-gradient(circle at 72% 28%, #f7bd16 0 18%, transparent 19%),
+          linear-gradient(135deg, #0e46d8, #0e7a5f);
+      }
+
+      .product-tile strong {
+        font-size: 13px;
+      }
+
+      .product-tile span {
+        color: var(--green);
+        font-weight: 800;
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      .signup-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: clamp(22px, 3vw, 34px);
+        box-shadow: 0 28px 70px rgba(16, 39, 51, 0.15);
+      }
+
+      .signup-card h2 {
+        margin: 0;
+        font-size: clamp(26px, 3vw, 36px);
+        line-height: 1.05;
+      }
+
+      .signup-card > p {
+        color: var(--muted);
+        line-height: 1.45;
+        margin: 12px 0 24px;
+      }
+
+      .price {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        padding: 16px;
+        border-radius: 8px;
+        background: #eef7f4;
+        margin-bottom: 18px;
+      }
+
+      .price strong {
+        font-size: 34px;
+        color: var(--green);
+      }
+
+      .price span {
+        color: #48616b;
+        font-weight: 700;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .field label {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .field input {
+        width: 100%;
+        border: 1px solid #cbd9df;
+        border-radius: 7px;
+        padding: 12px 13px;
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .field input:focus {
+        outline: 3px solid rgba(14, 70, 216, 0.14);
+        border-color: var(--blue);
+      }
+
+      .terms {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: #415660;
+        font-size: 13px;
+        line-height: 1.35;
+        margin: 4px 0 2px;
+      }
+
+      .terms input {
+        margin-top: 2px;
+      }
+
+      .submit {
+        width: 100%;
+        border: 0;
+        border-radius: 7px;
+        background: var(--green);
+        color: #fff;
+        padding: 14px 16px;
+        cursor: pointer;
+        font-weight: 900;
+        margin-top: 8px;
+      }
+
+      .submit:disabled {
+        opacity: 0.65;
+        cursor: wait;
+      }
+
+      .status {
+        min-height: 22px;
+        margin-top: 14px;
+        color: #8a4b0b;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .success-box {
+        display: none;
+        margin-top: 16px;
+        border: 1px solid #b7e3d2;
+        border-radius: 8px;
+        background: #ecfbf4;
+        padding: 16px;
+      }
+
+      .success-box.show {
+        display: block;
+      }
+
+      .success-box strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .payment-link {
+        display: inline-flex;
+        margin-top: 12px;
+        border-radius: 7px;
+        background: var(--blue);
+        color: #fff;
+        padding: 11px 14px;
+        text-decoration: none;
+        font-weight: 900;
+      }
+
+      .next-band {
+        padding: 30px clamp(20px, 5vw, 76px) 48px;
+        background: #102733;
+        color: #fff;
+      }
+
+      .next-band h2 {
+        margin: 0 0 10px;
+        font-size: 28px;
+      }
+
+      .next-band p {
+        max-width: 780px;
+        color: #b8c8d0;
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      @media (max-width: 980px) {
+        .hero {
+          grid-template-columns: 1fr;
+          min-height: auto;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .proof {
+          grid-template-columns: 1fr;
+        }
+
+        .mockup-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div>
+          <div class="brand">
+            <div class="brand-mark">CG</div>
+            <div>
+              <strong>Choque de Gestão</strong>
+              <span>Catálogo ecommerce para vendas pelo WhatsApp</span>
+            </div>
+          </div>
+
+          <h1>Sua loja com catálogo digital, pedidos e pagamento recorrente.</h1>
+          <p class="lead">
+            Cadastre sua empresa, ative a assinatura e comece a organizar produtos,
+            clientes e pedidos em uma plataforma pensada para vender com mais clareza.
+          </p>
+
+          <div class="proof">
+            <div class="proof-card">
+              <strong>R$ 27,97</strong>
+              <span>assinatura mensal com primeiro vencimento em 8 dias.</span>
+            </div>
+            <div class="proof-card">
+              <strong>Pix e cartão</strong>
+              <span>pagamento processado pelo ambiente seguro do Asaas.</span>
+            </div>
+            <div class="proof-card">
+              <strong>Multiempresa</strong>
+              <span>estrutura preparada para cada loja ter seus próprios dados.</span>
+            </div>
+          </div>
+
+          <div class="mockup" aria-hidden="true">
+            <div class="mockup-top">
+              <span>Catálogo da loja</span>
+              <span>Pedidos online</span>
+            </div>
+            <div class="mockup-grid">
+              <div class="product-tile">
+                <div class="product-image"></div>
+                <strong>Produto em destaque</strong>
+                <span>R$ 29,90</span>
+              </div>
+              <div class="product-tile">
+                <div class="product-image"></div>
+                <strong>Mais vendido</strong>
+                <span>R$ 17,50</span>
+              </div>
+              <div class="product-tile">
+                <div class="product-image"></div>
+                <strong>Novidade</strong>
+                <span>R$ 42,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="signup-card">
+          <h2>Comece sua adesão</h2>
+          <p>Preencha os dados da empresa. Em seguida, abriremos a fatura para ativar a assinatura.</p>
+
+          <div class="price">
+            <strong>R$ 27,97</strong>
+            <span>/ mês</span>
+          </div>
+
+          <form id="signupForm" class="form-grid">
+            <div class="field">
+              <label for="companyName">Nome da empresa</label>
+              <input id="companyName" name="nome" autocomplete="organization" required>
+            </div>
+            <div class="field">
+              <label for="responsibleName">Responsável</label>
+              <input id="responsibleName" name="responsavel" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="document">CPF/CNPJ</label>
+              <input id="document" name="documento" inputmode="numeric" required>
+            </div>
+            <div class="field">
+              <label for="whatsapp">WhatsApp</label>
+              <input id="whatsapp" name="telefone" inputmode="tel" autocomplete="tel" required>
+            </div>
+            <div class="field">
+              <label for="email">E-mail</label>
+              <input id="email" name="email" type="email" autocomplete="email" required>
+            </div>
+
+            <label class="terms">
+              <input id="terms" name="aceite" type="checkbox" required>
+              <span>Confirmo que os dados informados são verdadeiros e autorizo a criação da assinatura mensal.</span>
+            </label>
+
+            <button id="submitButton" class="submit" type="submit">Criar assinatura e pagar</button>
+            <div id="status" class="status"></div>
+          </form>
+
+          <div id="successBox" class="success-box">
+            <strong>Cadastro iniciado com sucesso.</strong>
+            <span>Use o botão abaixo para abrir a fatura segura do Asaas.</span>
+            <a id="paymentLink" class="payment-link" href="#" target="_blank" rel="noopener">Abrir pagamento</a>
+          </div>
+        </aside>
+      </section>
+
+      <section class="next-band">
+        <h2>Depois do pagamento</h2>
+        <p>
+          O Asaas envia a confirmação automaticamente. Quando o pagamento for recebido,
+          sua empresa fica ativa no painel e o próximo passo será liberar o acesso da loja.
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById("signupForm");
+      const submitButton = document.getElementById("submitButton");
+      const statusBox = document.getElementById("status");
+      const successBox = document.getElementById("successBox");
+      const paymentLink = document.getElementById("paymentLink");
+      const documentInput = document.getElementById("document");
+      const whatsappInput = document.getElementById("whatsapp");
+
+      documentInput.addEventListener("input", () => {
+        documentInput.value = onlyDigits(documentInput.value);
+      });
+
+      whatsappInput.addEventListener("input", () => {
+        whatsappInput.value = onlyDigits(whatsappInput.value);
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        statusBox.textContent = "Criando cadastro e assinatura...";
+        successBox.classList.remove("show");
+        submitButton.disabled = true;
+
+        const payload = Object.fromEntries(new FormData(form).entries());
+        payload.aceite = document.getElementById("terms").checked;
+
+        try {
+          const response = await fetch("/.netlify/functions/public-signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel criar a assinatura.");
+          }
+
+          statusBox.textContent = "";
+          if (data.invoiceUrl) {
+            paymentLink.href = data.invoiceUrl;
+            successBox.classList.add("show");
+            window.open(data.invoiceUrl, "_blank", "noopener");
+          } else {
+            statusBox.textContent = "Assinatura criada. O link de pagamento ainda nao foi retornado pelo Asaas.";
+          }
+        } catch (error) {
+          statusBox.textContent = error.message;
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+
+      function onlyDigits(value) {
+        return String(value || "").replace(/\D/g, "");
+      }
+    </script>
+  </body>
+</html>
