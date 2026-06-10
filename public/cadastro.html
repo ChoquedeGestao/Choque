@@ -243,6 +243,26 @@
         margin: 0 0 16px;
       }
 
+      .support-box {
+        display: grid;
+        gap: 9px;
+        border: 1px solid #d7e7ee;
+        border-radius: 8px;
+        background: #f8fbfc;
+        padding: 14px;
+        margin-bottom: 16px;
+      }
+
+      .support-box strong {
+        color: var(--ink);
+      }
+
+      .support-box a {
+        color: var(--green);
+        font-weight: 900;
+        overflow-wrap: anywhere;
+      }
+
       .form-grid {
         display: grid;
         gap: 12px;
@@ -456,30 +476,36 @@
             <span>/ mês</span>
           </div>
 
-          <a class="support-link" href="https://wa.me/5511973292145?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20a%20ades%C3%A3o%20da%20plataforma%20Choque%20de%20Gest%C3%A3o." target="_blank" rel="noopener">
-            Falar com suporte pelo WhatsApp
-          </a>
+          <div class="support-box">
+            <strong>Suporte para adesao</strong>
+            <a href="https://wa.me/5511973292145?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20a%20ades%C3%A3o%20da%20plataforma%20Choque%20de%20Gest%C3%A3o." target="_blank" rel="noopener">
+              WhatsApp: (11) 97329-2145
+            </a>
+            <a href="mailto:choquedegestao@choquedegestao.com?subject=Suporte%20adesao%20Choque%20de%20Gestao">
+              E-mail: choquedegestao@choquedegestao.com
+            </a>
+          </div>
 
           <form id="signupForm" class="form-grid">
             <div class="field">
               <label for="companyName">Nome da empresa</label>
-              <input id="companyName" name="nome" autocomplete="organization" required>
+              <input id="companyName" name="nome" autocomplete="organization" required placeholder="Razao social ou nome fantasia">
             </div>
             <div class="field">
               <label for="responsibleName">Responsável</label>
-              <input id="responsibleName" name="responsavel" autocomplete="name" required>
+              <input id="responsibleName" name="responsavel" autocomplete="name" required placeholder="Nome completo do responsavel">
             </div>
             <div class="field">
               <label for="document">CPF/CNPJ</label>
-              <input id="document" name="documento" inputmode="numeric" required>
+              <input id="document" name="documento" inputmode="numeric" required placeholder="Somente numeros">
             </div>
             <div class="field">
               <label for="whatsapp">WhatsApp</label>
-              <input id="whatsapp" name="telefone" inputmode="tel" autocomplete="tel" required>
+              <input id="whatsapp" name="telefone" inputmode="tel" autocomplete="tel" required placeholder="DDD + numero">
             </div>
             <div class="field">
               <label for="email">E-mail</label>
-              <input id="email" name="email" type="email" autocomplete="email" required>
+              <input id="email" name="email" type="email" autocomplete="email" required placeholder="email da empresa">
             </div>
 
             <label class="terms">
@@ -497,6 +523,7 @@
             <div class="success-actions">
               <a id="paymentLink" class="payment-link" href="#" target="_blank" rel="noopener">Abrir pagamento</a>
               <a class="support-link" href="https://wa.me/5511973292145?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20pagamento%20da%20assinatura%20Choque%20de%20Gest%C3%A3o." target="_blank" rel="noopener">Suporte WhatsApp</a>
+              <a class="support-link" href="mailto:choquedegestao@choquedegestao.com?subject=Suporte%20pagamento%20Choque%20de%20Gestao">Suporte por e-mail</a>
             </div>
           </div>
         </aside>
