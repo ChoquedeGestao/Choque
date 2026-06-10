@@ -227,6 +227,22 @@
         font-weight: 700;
       }
 
+      .support-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        border: 1px solid #b7e3d2;
+        border-radius: 7px;
+        background: #f4fbf8;
+        color: var(--green);
+        padding: 11px 14px;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 900;
+        margin: 0 0 16px;
+      }
+
       .form-grid {
         display: grid;
         gap: 12px;
@@ -322,6 +338,19 @@
         padding: 11px 14px;
         text-decoration: none;
         font-weight: 900;
+      }
+
+      .success-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .success-actions .payment-link,
+      .success-actions .support-link {
+        width: auto;
+        margin: 0;
       }
 
       .next-band {
@@ -427,6 +456,10 @@
             <span>/ mês</span>
           </div>
 
+          <a class="support-link" href="https://wa.me/5511973292145?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20a%20ades%C3%A3o%20da%20plataforma%20Choque%20de%20Gest%C3%A3o." target="_blank" rel="noopener">
+            Falar com suporte pelo WhatsApp
+          </a>
+
           <form id="signupForm" class="form-grid">
             <div class="field">
               <label for="companyName">Nome da empresa</label>
@@ -461,7 +494,10 @@
           <div id="successBox" class="success-box">
             <strong>Cadastro iniciado com sucesso.</strong>
             <span>Use o botão abaixo para abrir a fatura segura do Asaas.</span>
-            <a id="paymentLink" class="payment-link" href="#" target="_blank" rel="noopener">Abrir pagamento</a>
+            <div class="success-actions">
+              <a id="paymentLink" class="payment-link" href="#" target="_blank" rel="noopener">Abrir pagamento</a>
+              <a class="support-link" href="https://wa.me/5511973292145?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20o%20pagamento%20da%20assinatura%20Choque%20de%20Gest%C3%A3o." target="_blank" rel="noopener">Suporte WhatsApp</a>
+            </div>
           </div>
         </aside>
       </section>
