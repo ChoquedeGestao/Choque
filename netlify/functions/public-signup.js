@@ -25,34 +25,36 @@ exports.handler = async (event) => {
 
   try {
     const existingCompany = await findExistingCompany(config, company);
-    if (existingCompany?.asaas_subscription_id) {
-      return json(409, {
-        ok: false,
-        error: "Ja existe uma assinatura para este CPF/CNPJ ou e-mail."
-      });
-    }
-
-    const empresa = existingCompany || await createCompany(config, company);
-    const customerId = empresa.asaas_customer_id || await createAsaasCustomer(config, empresa);
-
-    if (!empresa.asaas_customer_id) {
-      await patchRows(config, "empresas", `id=eq.${empresa.id}`, {
-        asaas_customer_id: customerId,
-        updated_at: new Date().toISOString()
-      });
-    }
-
-    const existingSubscription = await selectOne(
-      config,
-      "assinaturas",
-      `empresa_id=eq.${encodeURIComponent(empresa.id)}`
-    );
+    const existingSubscription = existingCompany
+      ? await selectOne(config, "assinaturas", `empresa_id=eq.${encodeURIComponent(existingCompany.id)}`)
+      : null;
 
     if (existingSubscription?.asaas_subscription_id) {
       return json(409, {
         ok: false,
-        error: "Esta empresa ja possui assinatura criada.",
+        error: "Esta empresa ja possui assinatura criada. Abra o pagamento ou fale com o suporte.",
         invoiceUrl: existingSubscription.invoice_url || null
+      });
+    }
+
+    const customerId = existingCompany?.asaas_customer_id || await createAsaasCustomer(config, {
+      ...company,
+      id: existingCompany?.id || company.documento
+    });
+
+    let empresa = existingCompany;
+    if (empresa) {
+      if (!empresa.asaas_customer_id) {
+        await patchRows(config, "empresas", `id=eq.${empresa.id}`, {
+          asaas_customer_id: customerId,
+          updated_at: new Date().toISOString()
+        });
+        empresa = { ...empresa, asaas_customer_id: customerId };
+      }
+    } else {
+      empresa = await createCompany(config, {
+        ...company,
+        asaas_customer_id: customerId
       });
     }
 
@@ -97,7 +99,7 @@ exports.handler = async (event) => {
 
     return json(500, {
       ok: false,
-      error: "Nao foi possivel concluir o cadastro agora."
+      error: publicErrorMessage(error, config)
     });
   }
 };
@@ -149,6 +151,9 @@ function validateCompany(company, aceite) {
   if (!company.documento || ![11, 14].includes(company.documento.length)) {
     return "Informe CPF ou CNPJ com 11 ou 14 digitos.";
   }
+  if (!isValidCpfCnpj(company.documento)) {
+    return "CPF ou CNPJ invalido. Confira os numeros digitados.";
+  }
   if (aceite !== true) return "Aceite os termos para continuar.";
   return null;
 }
@@ -175,7 +180,7 @@ async function createAsaasCustomer(config, empresa) {
       email: empresa.email,
       mobilePhone: empresa.telefone,
       cpfCnpj: empresa.documento,
-      externalReference: empresa.id,
+      externalReference: empresa.id || empresa.documento,
       notificationDisabled: false
     }))
   });
@@ -234,7 +239,10 @@ async function asaasRequest(config, path, options = {}) {
   const body = text ? JSON.parse(text) : {};
 
   if (!response.ok) {
-    throw new Error(`Asaas ${response.status}: ${JSON.stringify(body)}`);
+    const error = new Error(`Asaas ${response.status}: ${JSON.stringify(body)}`);
+    error.statusCode = response.status;
+    error.body = body;
+    throw error;
   }
 
   return body;
@@ -292,6 +300,65 @@ function cleanText(value) {
 function onlyDigits(value) {
   const text = String(value || "").replace(/\D/g, "");
   return text || null;
+}
+
+function isValidCpfCnpj(value) {
+  const digits = onlyDigits(value);
+  if (!digits) return false;
+  if (digits.length === 11) return isValidCpf(digits);
+  if (digits.length === 14) return isValidCnpj(digits);
+  return false;
+}
+
+function isValidCpf(cpf) {
+  if (/^(\d)\1+$/.test(cpf)) return false;
+
+  const digit = (base, factor) => {
+    let total = 0;
+    for (let index = 0; index < base.length; index += 1) {
+      total += Number(base[index]) * (factor - index);
+    }
+    const rest = (total * 10) % 11;
+    return rest === 10 ? 0 : rest;
+  };
+
+  const first = digit(cpf.slice(0, 9), 10);
+  const second = digit(cpf.slice(0, 9) + first, 11);
+  return cpf.endsWith(`${first}${second}`);
+}
+
+function isValidCnpj(cnpj) {
+  if (/^(\d)\1+$/.test(cnpj)) return false;
+
+  const digit = (base) => {
+    const weights = base.length === 12
+      ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+      : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const total = base.split("").reduce((sum, number, index) => sum + Number(number) * weights[index], 0);
+    const rest = total % 11;
+    return rest < 2 ? 0 : 11 - rest;
+  };
+
+  const first = digit(cnpj.slice(0, 12));
+  const second = digit(cnpj.slice(0, 12) + first);
+  return cnpj.endsWith(`${first}${second}`);
+}
+
+function publicErrorMessage(error, config) {
+  const serialized = JSON.stringify(error.body || {});
+  if (error.statusCode === 400 && /CPF\/CNPJ|cpfCnpj|invalid_object/i.test(serialized)) {
+    if ((config.asaasApiBaseUrl || "").includes("sandbox")) {
+      return "O Asaas Sandbox recusou este CPF/CNPJ. Para teste, use um CPF/CNPJ aceito pelo ambiente sandbox.";
+    }
+
+    return "O Asaas recusou este CPF/CNPJ. Confira o documento informado.";
+  }
+
+  if (/duplicate key|23505/i.test(error.message)) {
+    return "Ja existe cadastro para este CPF/CNPJ ou e-mail.";
+  }
+
+  return "Nao foi possivel concluir o cadastro agora. Confira os dados e tente novamente.";
 }
 
 function addDays(date, days) {
