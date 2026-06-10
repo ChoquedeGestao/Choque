@@ -637,6 +637,7 @@
           ["Nome", row => row.nome],
           ["Responsavel", row => row.responsavel || "-"],
           ["Status", row => renderCompanyStatus(row)],
+          ["Cadastro", row => renderRegistrationCell(row)],
           ["Cliente Asaas", row => row.asaas_customer_id],
           ["Email", row => row.email || "-"],
           ["Atualizado", row => formatDate(row.updated_at)],
@@ -751,6 +752,22 @@
 
       function isCompanyIncomplete(row) {
         return !row.responsavel || !row.email || !row.telefone || !row.documento;
+      }
+
+      function renderRegistrationCell(row) {
+        const text = isCompanyIncomplete(row) ? "Completar cadastro" : "Editar cadastro";
+        const badge = isCompanyIncomplete(row)
+          ? `<span class="badge incompleto">Dados incompletos</span>`
+          : `<span class="badge ativo">Completo</span>`;
+
+        return `
+          <div class="action-stack">
+            ${badge}
+            <button class="button small secondary" type="button" data-complete-company="${escapeHtml(row.id)}">
+              ${text}
+            </button>
+          </div>
+        `;
       }
 
       function renderCompanyActions(row) {
