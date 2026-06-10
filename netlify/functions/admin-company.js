@@ -1,5 +1,5 @@
 exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
+  if (!["POST", "PATCH"].includes(event.httpMethod)) {
     return json(405, { ok: false, error: "Metodo nao permitido." });
   }
 
@@ -40,7 +40,34 @@ exports.handler = async (event) => {
     return json(400, { ok: false, error: "Informe o nome da empresa." });
   }
 
+  if (company.documento && !isValidDocument(company.documento)) {
+    return json(400, { ok: false, error: "Informe um CPF ou CNPJ valido." });
+  }
+
   try {
+    if (event.httpMethod === "PATCH") {
+      const companyId = cleanText(payload.id);
+      if (!companyId) {
+        return json(400, { ok: false, error: "Empresa nao informada." });
+      }
+
+      const updated = await supabaseRequest(
+        supabaseUrl,
+        serviceRoleKey,
+        `empresas?id=eq.${encodeURIComponent(companyId)}`,
+        {
+          method: "PATCH",
+          headers: { Prefer: "return=representation" },
+          body: JSON.stringify(company)
+        }
+      );
+
+      return json(200, {
+        ok: true,
+        empresa: updated[0] || null
+      });
+    }
+
     const inserted = await supabaseRequest(supabaseUrl, serviceRoleKey, "empresas", {
       method: "POST",
       headers: { Prefer: "return=representation" },
@@ -121,6 +148,53 @@ function normalizeStatus(value) {
   return allowed.has(value) ? value : "pendente";
 }
 
+function isValidDocument(value) {
+  if (value.length === 11) return isValidCpf(value);
+  if (value.length === 14) return isValidCnpj(value);
+  return false;
+}
+
+function isValidCpf(cpf) {
+  if (/^(\d)\1+$/.test(cpf)) return false;
+
+  let sum = 0;
+  for (let index = 0; index < 9; index += 1) {
+    sum += Number(cpf[index]) * (10 - index);
+  }
+  let digit = (sum * 10) % 11;
+  if (digit === 10) digit = 0;
+  if (digit !== Number(cpf[9])) return false;
+
+  sum = 0;
+  for (let index = 0; index < 10; index += 1) {
+    sum += Number(cpf[index]) * (11 - index);
+  }
+  digit = (sum * 10) % 11;
+  if (digit === 10) digit = 0;
+
+  return digit === Number(cpf[10]);
+}
+
+function isValidCnpj(cnpj) {
+  if (/^(\d)\1+$/.test(cnpj)) return false;
+
+  const validateDigit = (length) => {
+    const weights = length === 12
+      ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+      : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+    const sum = weights.reduce((total, weight, index) => {
+      return total + Number(cnpj[index]) * weight;
+    }, 0);
+    const remainder = sum % 11;
+    const digit = remainder < 2 ? 0 : 11 - remainder;
+
+    return digit === Number(cnpj[length]);
+  };
+
+  return validateDigit(12) && validateDigit(13);
+}
+
 function json(statusCode, body) {
   return {
     statusCode,
@@ -131,3 +205,4 @@ function json(statusCode, body) {
     body: JSON.stringify(body)
   };
 }
+
