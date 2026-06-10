@@ -525,9 +525,11 @@
           if (data.invoiceUrl) {
             paymentLink.href = data.invoiceUrl;
             successBox.classList.add("show");
+            form.reset();
             window.open(data.invoiceUrl, "_blank", "noopener");
           } else {
             statusBox.textContent = "Assinatura criada. O link de pagamento ainda nao foi retornado pelo Asaas.";
+            form.reset();
           }
         } catch (error) {
           statusBox.textContent = error.message;
