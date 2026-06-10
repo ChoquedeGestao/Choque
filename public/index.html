@@ -320,6 +320,37 @@
         color: #4e5d65;
       }
 
+      .badge.incompleto {
+        background: #fff1ce;
+        color: #835200;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: grid;
+        place-items: center;
+        padding: 18px;
+        background: rgba(9, 23, 31, 0.54);
+      }
+
+      .modal {
+        width: min(620px, 100%);
+        padding: 22px;
+      }
+
+      .modal h3 {
+        margin: 0 0 8px;
+        font-size: 22px;
+      }
+
+      .modal p {
+        margin: 0 0 18px;
+        color: #5c6b74;
+        line-height: 1.45;
+      }
+
       .empty {
         padding: 22px 18px;
         color: #5c6b74;
@@ -474,6 +505,42 @@
             </div>
             <div id="logsTable" class="table-wrap"></div>
           </section>
+
+          <div id="completeCompanyModal" class="modal-backdrop hidden">
+            <form id="completeCompanyForm" class="panel modal">
+              <h3>Completar cadastro</h3>
+              <p>Preencha os dados que faltam sem alterar o historico de pagamentos e assinaturas.</p>
+              <input id="completeCompanyId" name="id" type="hidden">
+              <input id="completeCompanyStatus" name="status" type="hidden">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="completeCompanyName">Nome da empresa</label>
+                  <input id="completeCompanyName" name="nome" required>
+                </div>
+                <div class="field">
+                  <label for="completeCompanyResponsible">Responsavel</label>
+                  <input id="completeCompanyResponsible" name="responsavel">
+                </div>
+                <div class="field">
+                  <label for="completeCompanyDocument">CPF/CNPJ</label>
+                  <input id="completeCompanyDocument" name="documento" inputmode="numeric">
+                </div>
+                <div class="field">
+                  <label for="completeCompanyPhone">WhatsApp</label>
+                  <input id="completeCompanyPhone" name="telefone" inputmode="tel">
+                </div>
+                <div class="field">
+                  <label for="completeCompanyEmail">E-mail</label>
+                  <input id="completeCompanyEmail" name="email" type="email">
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button" type="submit">Salvar cadastro</button>
+                <button id="cancelCompleteCompany" class="button secondary" type="button">Cancelar</button>
+                <span id="completeCompanyStatusText" class="status"></span>
+              </div>
+            </form>
+          </div>
         </section>
       </main>
     </div>
@@ -490,6 +557,11 @@
       const companyForm = document.getElementById("companyForm");
       const cancelCompanyForm = document.getElementById("cancelCompanyForm");
       const companyFormStatus = document.getElementById("companyFormStatus");
+      const completeCompanyModal = document.getElementById("completeCompanyModal");
+      const completeCompanyForm = document.getElementById("completeCompanyForm");
+      const cancelCompleteCompany = document.getElementById("cancelCompleteCompany");
+      const completeCompanyStatusText = document.getElementById("completeCompanyStatusText");
+      let currentCompanies = [];
       const tokenKey = "choque_admin_token";
 
       loginForm.addEventListener("submit", async (event) => {
@@ -509,6 +581,8 @@
         companyFormStatus.textContent = "";
       });
       companyForm.addEventListener("submit", saveCompany);
+      completeCompanyForm.addEventListener("submit", saveCompanyUpdate);
+      cancelCompleteCompany.addEventListener("click", closeCompleteCompanyModal);
       logoutButton.addEventListener("click", () => {
         sessionStorage.removeItem(tokenKey);
         dashboard.classList.add("hidden");
@@ -558,10 +632,11 @@
       }
 
       function renderCompanies(rows) {
+        currentCompanies = rows;
         renderTable("companiesTable", rows, [
           ["Nome", row => row.nome],
           ["Responsavel", row => row.responsavel || "-"],
-          ["Status", row => `<span class="badge ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span>`],
+          ["Status", row => renderCompanyStatus(row)],
           ["Cliente Asaas", row => row.asaas_customer_id],
           ["Email", row => row.email || "-"],
           ["Atualizado", row => formatDate(row.updated_at)],
@@ -637,7 +712,54 @@
         }
       }
 
+      async function saveCompanyUpdate(event) {
+        event.preventDefault();
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) return;
+
+        completeCompanyStatusText.textContent = "Salvando...";
+        const formData = new FormData(completeCompanyForm);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch("/.netlify/functions/admin-company", {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel atualizar a empresa.");
+          }
+
+          closeCompleteCompanyModal();
+          await loadDashboard();
+        } catch (error) {
+          completeCompanyStatusText.textContent = error.message;
+        }
+      }
+
+      function renderCompanyStatus(row) {
+        const status = `<span class="badge ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span>`;
+        if (!isCompanyIncomplete(row)) return status;
+        return `${status}<br><span class="badge incompleto">Dados incompletos</span>`;
+      }
+
+      function isCompanyIncomplete(row) {
+        return !row.responsavel || !row.email || !row.telefone || !row.documento;
+      }
+
       function renderCompanyActions(row) {
+        const completeButton = `
+          <button class="button small secondary" type="button" data-complete-company="${escapeHtml(row.id)}">
+            ${isCompanyIncomplete(row) ? "Completar cadastro" : "Editar cadastro"}
+          </button>
+        `;
+
         if (row.asaas_subscription_id) {
           const paymentLink = row.assinatura_invoice_url
             ? `<a class="button small link" href="${escapeAttribute(row.assinatura_invoice_url)}" target="_blank" rel="noopener">Abrir pagamento</a>`
@@ -647,6 +769,7 @@
             <div class="action-stack">
               <span class="badge pendente">Assinatura criada</span>
               ${paymentLink}
+              ${completeButton}
             </div>
           `;
         }
@@ -659,6 +782,7 @@
           <button class="button small" type="button" data-subscription-company="${escapeHtml(row.id)}">
             Criar assinatura
           </button>
+          ${completeButton}
           <span class="inline-status" id="subscription-status-${escapeHtml(row.id)}"></span>
         `;
       }
@@ -669,10 +793,38 @@
       }
 
       document.addEventListener("click", async (event) => {
+        const completeButton = event.target.closest("[data-complete-company]");
+        if (completeButton) {
+          openCompleteCompanyModal(completeButton.dataset.completeCompany);
+          return;
+        }
+
         const button = event.target.closest("[data-subscription-company]");
-        if (!button) return;
-        await createSubscription(button.dataset.subscriptionCompany, button);
+        if (button) {
+          await createSubscription(button.dataset.subscriptionCompany, button);
+        }
       });
+
+      function openCompleteCompanyModal(companyId) {
+        const company = currentCompanies.find(row => row.id === companyId);
+        if (!company) return;
+
+        document.getElementById("completeCompanyId").value = company.id || "";
+        document.getElementById("completeCompanyStatus").value = company.status || "pendente";
+        document.getElementById("completeCompanyName").value = company.nome || "";
+        document.getElementById("completeCompanyResponsible").value = company.responsavel || "";
+        document.getElementById("completeCompanyDocument").value = company.documento || "";
+        document.getElementById("completeCompanyPhone").value = company.telefone || "";
+        document.getElementById("completeCompanyEmail").value = company.email || "";
+        completeCompanyStatusText.textContent = "";
+        completeCompanyModal.classList.remove("hidden");
+      }
+
+      function closeCompleteCompanyModal() {
+        completeCompanyForm.reset();
+        completeCompanyStatusText.textContent = "";
+        completeCompanyModal.classList.add("hidden");
+      }
 
       async function createSubscription(companyId, button) {
         const token = sessionStorage.getItem(tokenKey);
