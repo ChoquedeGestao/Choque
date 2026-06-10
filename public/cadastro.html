@@ -49,6 +49,11 @@
           #f5f8fb;
       }
 
+      .hero > div,
+      .signup-card {
+        min-width: 0;
+      }
+
       .brand {
         display: flex;
         align-items: center;
@@ -95,13 +100,14 @@
 
       .proof {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 12px;
         max-width: 720px;
         margin-top: 34px;
       }
 
       .proof-card {
+        min-width: 0;
         min-height: 108px;
         border: 1px solid var(--line);
         border-radius: 8px;
@@ -112,8 +118,10 @@
 
       .proof-card strong {
         display: block;
-        font-size: 22px;
+        font-size: clamp(18px, 2vw, 22px);
         color: var(--ink);
+        line-height: 1.08;
+        overflow-wrap: anywhere;
       }
 
       .proof-card span {
@@ -122,6 +130,7 @@
         color: var(--muted);
         line-height: 1.35;
         font-size: 13px;
+        overflow-wrap: anywhere;
       }
 
       .mockup {
@@ -493,6 +502,10 @@
         payload.aceite = document.getElementById("terms").checked;
 
         try {
+          if (!isValidCpfCnpj(payload.documento)) {
+            throw new Error("CPF ou CNPJ invalido. Confira os numeros digitados.");
+          }
+
           const response = await fetch("/.netlify/functions/public-signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -501,6 +514,10 @@
           const data = await response.json();
 
           if (!response.ok) {
+            if (data.invoiceUrl) {
+              paymentLink.href = data.invoiceUrl;
+              successBox.classList.add("show");
+            }
             throw new Error(data.error || "Nao foi possivel criar a assinatura.");
           }
 
@@ -521,6 +538,47 @@
 
       function onlyDigits(value) {
         return String(value || "").replace(/\D/g, "");
+      }
+
+      function isValidCpfCnpj(value) {
+        const digits = onlyDigits(value);
+        if (digits.length === 11) return isValidCpf(digits);
+        if (digits.length === 14) return isValidCnpj(digits);
+        return false;
+      }
+
+      function isValidCpf(cpf) {
+        if (/^(\d)\1+$/.test(cpf)) return false;
+
+        const digit = (base, factor) => {
+          let total = 0;
+          for (let index = 0; index < base.length; index += 1) {
+            total += Number(base[index]) * (factor - index);
+          }
+          const rest = (total * 10) % 11;
+          return rest === 10 ? 0 : rest;
+        };
+
+        const first = digit(cpf.slice(0, 9), 10);
+        const second = digit(cpf.slice(0, 9) + first, 11);
+        return cpf.endsWith(`${first}${second}`);
+      }
+
+      function isValidCnpj(cnpj) {
+        if (/^(\d)\1+$/.test(cnpj)) return false;
+
+        const digit = (base) => {
+          const weights = base.length === 12
+            ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+            : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+          const total = base.split("").reduce((sum, number, index) => sum + Number(number) * weights[index], 0);
+          const rest = total % 11;
+          return rest < 2 ? 0 : 11 - rest;
+        };
+
+        const first = digit(cnpj.slice(0, 12));
+        const second = digit(cnpj.slice(0, 12) + first);
+        return cnpj.endsWith(`${first}${second}`);
       }
     </script>
   </body>
