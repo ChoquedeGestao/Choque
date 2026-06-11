@@ -1,5 +1,5 @@
 exports.handler = async (event) => {
-  if (!["GET", "PATCH"].includes(event.httpMethod)) {
+  if (!["GET", "POST", "PATCH"].includes(event.httpMethod)) {
     return json(405, { ok: false, error: "Metodo nao permitido." });
   }
 
@@ -26,7 +26,9 @@ exports.handler = async (event) => {
     }
 
     const normalized = normalizeSettings(requestData, empresa.id);
-    const saved = await saveSettings(supabaseUrl, serviceRoleKey, normalized);
+    const saved = event.httpMethod === "POST"
+      ? await createSettings(supabaseUrl, serviceRoleKey, normalized)
+      : await updateSettings(supabaseUrl, serviceRoleKey, normalized);
 
     return json(200, {
       ok: true,
@@ -93,16 +95,34 @@ async function getSettings(supabaseUrl, serviceRoleKey, empresaId) {
   return rows[0] || null;
 }
 
-async function saveSettings(supabaseUrl, serviceRoleKey, settings) {
-  const rows = await supabaseRequest(supabaseUrl, serviceRoleKey, "lojas_config?on_conflict=empresa_id", {
+async function createSettings(supabaseUrl, serviceRoleKey, settings) {
+  const rows = await supabaseRequest(supabaseUrl, serviceRoleKey, "lojas_config", {
     method: "POST",
     headers: {
-      Prefer: "resolution=merge-duplicates,return=representation"
+      Prefer: "return=representation"
     },
     body: JSON.stringify([settings])
   });
 
   return rows[0] || null;
+}
+
+async function updateSettings(supabaseUrl, serviceRoleKey, settings) {
+  const rows = await supabaseRequest(
+    supabaseUrl,
+    serviceRoleKey,
+    `lojas_config?empresa_id=eq.${encodeURIComponent(settings.empresa_id)}`,
+    {
+      method: "PATCH",
+      headers: {
+        Prefer: "return=representation"
+      },
+      body: JSON.stringify(settings)
+    }
+  );
+
+  if (rows[0]) return rows[0];
+  return createSettings(supabaseUrl, serviceRoleKey, settings);
 }
 
 function normalizeSettings(payload, empresaId) {
