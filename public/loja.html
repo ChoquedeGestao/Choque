@@ -32,7 +32,8 @@
 
       button,
       input,
-      select {
+      select,
+      textarea {
         font: inherit;
       }
 
@@ -137,12 +138,18 @@
       }
 
       .field input,
-      .field select {
+      .field select,
+      .field textarea {
         width: 100%;
         border: 1px solid #cbd9df;
         border-radius: 7px;
         padding: 12px 13px;
         background: #fff;
+      }
+
+      .field textarea {
+        min-height: 100px;
+        resize: vertical;
       }
 
       .button {
@@ -382,6 +389,41 @@
         color: #8a4b0b;
       }
 
+      .check-field {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 800;
+      }
+
+      .check-field input {
+        width: 18px;
+        height: 18px;
+      }
+
+      .product-card {
+        display: grid;
+        grid-template-columns: 86px 1fr;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .product-image {
+        width: 86px;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #edf4f7;
+        object-fit: cover;
+      }
+
+      .product-meta {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.35;
+        margin-top: 5px;
+      }
+
       .color-field {
         display: grid;
         gap: 6px;
@@ -516,7 +558,7 @@
           <div class="cards">
             <article class="card">
               <span>Produtos</span>
-              <strong>0</strong>
+              <strong id="productCount">0</strong>
             </article>
             <article class="card">
               <span>Categorias</span>
@@ -590,6 +632,88 @@
                 <h3>Categorias cadastradas</h3>
                 <div id="categoriesList" class="list">
                   <div class="notice">Nenhuma categoria cadastrada ainda.</div>
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          <section id="productsEditor" class="editor hidden">
+            <div class="editor-header">
+              <h3>Produtos</h3>
+              <button id="closeProductsButton" class="button secondary small" type="button">Fechar</button>
+            </div>
+            <div class="editor-body">
+              <form id="productForm">
+                <input id="productId" name="id" type="hidden">
+                <div class="form-grid">
+                  <div class="field wide">
+                    <label for="productName">Nome do produto</label>
+                    <input id="productName" name="nome" required placeholder="Ex.: Trava de seguranca">
+                  </div>
+                  <div class="field">
+                    <label for="productPrice">Preco</label>
+                    <input id="productPrice" name="preco" inputmode="decimal" required placeholder="29,90">
+                  </div>
+                  <div class="field">
+                    <label for="productCategory">Categoria</label>
+                    <select id="productCategory" name="categoria_id">
+                      <option value="">Sem categoria</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="productSubcategory">Subcategoria</label>
+                    <select id="productSubcategory" name="subcategoria_id">
+                      <option value="">Sem subcategoria</option>
+                    </select>
+                  </div>
+                  <div class="field wide">
+                    <label for="productDescription">Descricao</label>
+                    <textarea id="productDescription" name="descricao" placeholder="Descricao que o cliente vera no catalogo"></textarea>
+                  </div>
+                  <div class="field">
+                    <label for="productImage1">Imagem 1</label>
+                    <input id="productImage1" name="imagem_1" placeholder="Link da imagem principal">
+                  </div>
+                  <div class="field">
+                    <label for="productImage2">Imagem 2</label>
+                    <input id="productImage2" name="imagem_2" placeholder="Link da imagem">
+                  </div>
+                  <div class="field">
+                    <label for="productImage3">Imagem 3</label>
+                    <input id="productImage3" name="imagem_3" placeholder="Link da imagem">
+                  </div>
+                  <div class="field">
+                    <label for="productImage4">Imagem 4</label>
+                    <input id="productImage4" name="imagem_4" placeholder="Link da imagem">
+                  </div>
+                  <label class="check-field">
+                    <input id="productNew" name="novidade" type="checkbox">
+                    Marcar como novidade
+                  </label>
+                  <label class="check-field">
+                    <input id="productActive" name="ativo" type="checkbox" checked>
+                    Produto ativo
+                  </label>
+                </div>
+                <div class="actions-row">
+                  <button id="saveProductButton" class="button" type="submit">Cadastrar produto</button>
+                  <button id="cancelProductEditButton" class="button secondary hidden" type="button">Cancelar alteracao</button>
+                </div>
+                <div class="notice">
+                  Para importar por planilha, use o modelo CSV com nome, descricao, preco, categoria, subcategoria e ate 4 imagens.
+                  <div class="actions-row">
+                    <a class="button secondary small" href="/modelo-produtos.csv" download>Baixar modelo</a>
+                    <label class="button secondary small" for="productImportFile">Importar planilha</label>
+                    <input id="productImportFile" class="hidden" type="file" accept=".csv,text/csv">
+                  </div>
+                </div>
+                <div id="productStatus" class="status"></div>
+              </form>
+
+              <aside>
+                <h3>Produtos cadastrados</h3>
+                <div id="productsList" class="list">
+                  <div class="notice">Nenhum produto cadastrado ainda.</div>
                 </div>
               </aside>
             </div>
@@ -699,9 +823,11 @@
       const storeDataModule = document.getElementById("storeDataModule");
       const settingsEditor = document.getElementById("storeSettingsEditor");
       const categoriesEditor = document.getElementById("categoriesEditor");
+      const productsEditor = document.getElementById("productsEditor");
       const moduleNotice = document.getElementById("moduleNotice");
       const closeSettingsButton = document.getElementById("closeSettingsButton");
       const closeCategoriesButton = document.getElementById("closeCategoriesButton");
+      const closeProductsButton = document.getElementById("closeProductsButton");
       const settingsForm = document.getElementById("storeSettingsForm");
       const settingsStatus = document.getElementById("settingsStatus");
       const createSettingsButton = document.getElementById("createSettingsButton");
@@ -724,8 +850,21 @@
       const categoryStatus = document.getElementById("categoryStatus");
       const categoriesList = document.getElementById("categoriesList");
       const categoryCount = document.getElementById("categoryCount");
+      const productCount = document.getElementById("productCount");
+      const productForm = document.getElementById("productForm");
+      const productIdInput = document.getElementById("productId");
+      const productNameInput = document.getElementById("productName");
+      const productPriceInput = document.getElementById("productPrice");
+      const productCategorySelect = document.getElementById("productCategory");
+      const productSubcategorySelect = document.getElementById("productSubcategory");
+      const productImportFile = document.getElementById("productImportFile");
+      const productStatus = document.getElementById("productStatus");
+      const productsList = document.getElementById("productsList");
+      const saveProductButton = document.getElementById("saveProductButton");
+      const cancelProductEditButton = document.getElementById("cancelProductEditButton");
       const sessionKey = "choque_store_session";
       let categoriesCache = [];
+      let productsCache = [];
 
       documentInput.addEventListener("input", () => {
         documentInput.value = onlyDigits(documentInput.value);
@@ -770,6 +909,7 @@
         storeNav.classList.add("hidden");
         settingsEditor.classList.add("hidden");
         categoriesEditor.classList.add("hidden");
+        productsEditor.classList.add("hidden");
         loginView.classList.remove("hidden");
         form.reset();
         loginStatus.textContent = "";
@@ -789,8 +929,20 @@
         categoriesEditor.classList.add("hidden");
       });
 
+      closeProductsButton.addEventListener("click", () => {
+        productsEditor.classList.add("hidden");
+      });
+
       cancelCategoryEditButton.addEventListener("click", () => {
         resetCategoryForm();
+      });
+
+      cancelProductEditButton.addEventListener("click", () => {
+        resetProductForm();
+      });
+
+      productCategorySelect.addEventListener("change", () => {
+        renderProductSubcategories();
       });
 
       settingsForm.addEventListener("input", updatePreview);
@@ -888,6 +1040,47 @@
         }
       });
 
+      productForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const session = getSession();
+        if (!session) return;
+
+        const isEditing = Boolean(productIdInput.value);
+        productStatus.textContent = isEditing ? "Alterando produto..." : "Salvando produto...";
+        saveProductButton.disabled = true;
+
+        const payload = {
+          ...Object.fromEntries(new FormData(productForm).entries()),
+          ativo: document.getElementById("productActive").checked,
+          novidade: document.getElementById("productNew").checked,
+          documento: session.loginDocumento || session.documento,
+          acesso: session.loginAcesso || session.email || session.telefone
+        };
+
+        try {
+          const response = await fetch("/.netlify/functions/store-products", {
+            method: isEditing ? "PATCH" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel salvar o produto.");
+          }
+
+          resetProductForm();
+          productStatus.textContent = isEditing
+            ? "Produto alterado com sucesso."
+            : "Produto cadastrado com sucesso.";
+          await loadProducts();
+        } catch (error) {
+          productStatus.textContent = error.message;
+        } finally {
+          saveProductButton.disabled = false;
+        }
+      });
+
       categoriesList.addEventListener("click", async (event) => {
         const editButton = event.target.closest("[data-edit-category]");
         if (editButton) {
@@ -982,6 +1175,105 @@
         }
       });
 
+      productsList.addEventListener("click", async (event) => {
+        const editButton = event.target.closest("[data-edit-product]");
+        if (editButton) {
+          const product = productsCache.find((item) => item.id === editButton.dataset.editProduct);
+          if (!product) return;
+
+          productIdInput.value = product.id;
+          productNameInput.value = product.nome || "";
+          productPriceInput.value = formatPlainMoney(product.preco);
+          productCategorySelect.value = product.categoria_id || "";
+          renderProductSubcategories();
+          productSubcategorySelect.value = product.subcategoria_id || "";
+          document.getElementById("productDescription").value = product.descricao || "";
+          document.getElementById("productImage1").value = product.imagem_1 || "";
+          document.getElementById("productImage2").value = product.imagem_2 || "";
+          document.getElementById("productImage3").value = product.imagem_3 || "";
+          document.getElementById("productImage4").value = product.imagem_4 || "";
+          document.getElementById("productNew").checked = Boolean(product.novidade);
+          document.getElementById("productActive").checked = Boolean(product.ativo);
+          saveProductButton.textContent = "Salvar alteracao";
+          cancelProductEditButton.classList.remove("hidden");
+          productStatus.textContent = "Edite os dados e clique em Salvar alteracao.";
+          productNameInput.focus();
+          return;
+        }
+
+        const deleteButton = event.target.closest("[data-delete-product]");
+        if (deleteButton) {
+          const session = getSession();
+          const product = productsCache.find((item) => item.id === deleteButton.dataset.deleteProduct);
+          if (!session || !product) return;
+          if (!window.confirm("Deseja excluir este produto?")) return;
+
+          deleteButton.disabled = true;
+          productStatus.textContent = "Excluindo produto...";
+
+          try {
+            const response = await fetch("/.netlify/functions/store-products", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: product.id,
+                documento: session.loginDocumento || session.documento,
+                acesso: session.loginAcesso || session.email || session.telefone
+              })
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.error || "Nao foi possivel excluir o produto.");
+            }
+
+            resetProductForm();
+            productStatus.textContent = "Produto excluido com sucesso.";
+            await loadProducts();
+          } catch (error) {
+            productStatus.textContent = error.message;
+          } finally {
+            deleteButton.disabled = false;
+          }
+          return;
+        }
+
+        const toggleButton = event.target.closest("[data-toggle-product]");
+        if (!toggleButton) return;
+
+        const session = getSession();
+        const product = productsCache.find((item) => item.id === toggleButton.dataset.toggleProduct);
+        if (!session || !product) return;
+
+        toggleButton.disabled = true;
+        productStatus.textContent = product.ativo ? "Desativando produto..." : "Ativando produto...";
+
+        try {
+          const response = await fetch("/.netlify/functions/store-products", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: product.id,
+              ativo: !product.ativo,
+              documento: session.loginDocumento || session.documento,
+              acesso: session.loginAcesso || session.email || session.telefone
+            })
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel alterar o produto.");
+          }
+
+          productStatus.textContent = "Produto atualizado com sucesso.";
+          await loadProducts();
+        } catch (error) {
+          productStatus.textContent = error.message;
+        } finally {
+          toggleButton.disabled = false;
+        }
+      });
+
       categoryImportFile.addEventListener("change", async () => {
         const file = categoryImportFile.files?.[0];
         if (!file) return;
@@ -1005,6 +1297,32 @@
           categoryImportFile.value = "";
           categoryImportFile.disabled = false;
           saveCategoryButton.disabled = false;
+        }
+      });
+
+      productImportFile.addEventListener("change", async () => {
+        const file = productImportFile.files?.[0];
+        if (!file) return;
+
+        const session = getSession();
+        if (!session) return;
+
+        productStatus.textContent = "Importando produtos...";
+        productImportFile.disabled = true;
+        saveProductButton.disabled = true;
+
+        try {
+          const rows = parseCsv(await file.text());
+          const result = await importProducts(rows, session);
+          productStatus.textContent = `Importacao concluida: ${result.created} produtos cadastrados, ${result.skipped} ignorados.`;
+          resetProductForm();
+          await loadProducts();
+        } catch (error) {
+          productStatus.textContent = error.message;
+        } finally {
+          productImportFile.value = "";
+          productImportFile.disabled = false;
+          saveProductButton.disabled = false;
         }
       });
 
@@ -1037,6 +1355,7 @@
         if (section === "dados") {
           moduleNotice.classList.add("hidden");
           categoriesEditor.classList.add("hidden");
+          productsEditor.classList.add("hidden");
           settingsEditor.classList.remove("hidden");
           settingsEditor.scrollIntoView({ behavior: "smooth", block: "start" });
           return;
@@ -1045,14 +1364,26 @@
         if (section === "categorias") {
           moduleNotice.classList.add("hidden");
           settingsEditor.classList.add("hidden");
+          productsEditor.classList.add("hidden");
           categoriesEditor.classList.remove("hidden");
           categoriesEditor.scrollIntoView({ behavior: "smooth", block: "start" });
           loadCategories();
           return;
         }
 
+        if (section === "produtos") {
+          moduleNotice.classList.add("hidden");
+          settingsEditor.classList.add("hidden");
+          categoriesEditor.classList.add("hidden");
+          productsEditor.classList.remove("hidden");
+          productsEditor.scrollIntoView({ behavior: "smooth", block: "start" });
+          loadCategories().then(loadProducts);
+          return;
+        }
+
         settingsEditor.classList.add("hidden");
         categoriesEditor.classList.add("hidden");
+        productsEditor.classList.add("hidden");
         moduleNotice.classList.remove("hidden");
         moduleNotice.textContent = getSectionMessage(section);
         moduleNotice.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1136,6 +1467,7 @@
 
           categoriesCache = data.categorias || [];
           renderCategories();
+          renderProductCategoryOptions();
           categoryCount.textContent = String(categoriesCache.length);
           categoryStatus.textContent = "";
         } catch (error) {
@@ -1278,6 +1610,175 @@
         return data.categoria;
       }
 
+      async function loadProducts() {
+        const session = getSession();
+        if (!session) return;
+
+        const params = new URLSearchParams({
+          documento: session.loginDocumento || session.documento,
+          acesso: session.loginAcesso || session.email || session.telefone || ""
+        });
+
+        try {
+          productStatus.textContent = "Carregando produtos...";
+          const response = await fetch(`/.netlify/functions/store-products?${params.toString()}`);
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel carregar produtos.");
+          }
+
+          productsCache = data.produtos || [];
+          renderProducts();
+          productCount.textContent = String(productsCache.length);
+          productStatus.textContent = "";
+        } catch (error) {
+          productStatus.textContent = error.message;
+        }
+      }
+
+      function renderProductCategoryOptions() {
+        const roots = categoriesCache.filter((category) => !category.parent_id && category.ativo);
+        const selectedCategory = productCategorySelect.value;
+
+        productCategorySelect.innerHTML = '<option value="">Sem categoria</option>';
+        roots.forEach((category) => {
+          const option = document.createElement("option");
+          option.value = category.id;
+          option.textContent = category.nome;
+          productCategorySelect.appendChild(option);
+        });
+
+        if (selectedCategory && roots.some((category) => category.id === selectedCategory)) {
+          productCategorySelect.value = selectedCategory;
+        }
+
+        renderProductSubcategories();
+      }
+
+      function renderProductSubcategories() {
+        const selectedCategory = productCategorySelect.value;
+        const selectedSubcategory = productSubcategorySelect.value;
+        const children = categoriesCache.filter((category) => category.parent_id === selectedCategory && category.ativo);
+
+        productSubcategorySelect.innerHTML = '<option value="">Sem subcategoria</option>';
+        children.forEach((category) => {
+          const option = document.createElement("option");
+          option.value = category.id;
+          option.textContent = category.nome;
+          productSubcategorySelect.appendChild(option);
+        });
+
+        if (selectedSubcategory && children.some((category) => category.id === selectedSubcategory)) {
+          productSubcategorySelect.value = selectedSubcategory;
+        }
+      }
+
+      function renderProducts() {
+        if (!productsCache.length) {
+          productsList.innerHTML = '<div class="notice">Nenhum produto cadastrado ainda.</div>';
+          return;
+        }
+
+        productsList.innerHTML = productsCache.map(renderProductItem).join("");
+      }
+
+      function renderProductItem(product) {
+        const statusClass = product.ativo ? "badge" : "badge off";
+        const statusText = product.ativo ? "Ativo" : "Inativo";
+        const actionText = product.ativo ? "Desativar" : "Ativar";
+        const image = product.imagem_1 || product.imagem_2 || product.imagem_3 || product.imagem_4;
+        const category = categoryNameById(product.subcategoria_id) || categoryNameById(product.categoria_id) || "Sem categoria";
+
+        return `
+          <div class="product-card">
+            <div class="product-image">
+              ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.nome)}">` : "<span>Sem imagem</span>"}
+            </div>
+            <div>
+              <div class="list-title">
+                <strong>${escapeHtml(product.nome)}</strong>
+                <span class="${statusClass}">${statusText}</span>
+              </div>
+              <div class="product-meta">
+                <span>${escapeHtml(category)}</span>
+                <strong>${formatMoney(product.preco)}</strong>
+                ${product.novidade ? "<span>Novidade</span>" : ""}
+              </div>
+              <p>${escapeHtml(product.descricao || "Sem descricao cadastrada.")}</p>
+              <div class="actions-row">
+                <button class="button secondary small" type="button" data-edit-product="${product.id}">Alterar</button>
+                <button class="button secondary small" type="button" data-toggle-product="${product.id}">${actionText}</button>
+                <button class="button secondary small" type="button" data-delete-product="${product.id}">Excluir</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function resetProductForm() {
+        productForm.reset();
+        productIdInput.value = "";
+        productCategorySelect.value = "";
+        renderProductSubcategories();
+        document.getElementById("productActive").checked = true;
+        document.getElementById("productNew").checked = false;
+        saveProductButton.textContent = "Cadastrar produto";
+        cancelProductEditButton.classList.add("hidden");
+      }
+
+      async function importProducts(rows, session) {
+        if (!rows.length) {
+          throw new Error("A planilha nao possui produtos para importar.");
+        }
+
+        let created = 0;
+        let skipped = 0;
+
+        for (const row of rows) {
+          const payload = {
+            nome: cleanCell(row.nome || row.produto || row[0]),
+            descricao: cleanCell(row.descricao || row.description || row[1]),
+            preco: cleanCell(row.preco || row.valor || row.price || row[2]),
+            categoria_nome: cleanCell(row.categoria || row.category || row[3]),
+            subcategoria_nome: cleanCell(row.subcategoria || row.subcategory || row[4]),
+            imagem_1: cleanCell(row.imagem_1 || row.imagem1 || row.image_1 || row[5]),
+            imagem_2: cleanCell(row.imagem_2 || row.imagem2 || row.image_2 || row[6]),
+            imagem_3: cleanCell(row.imagem_3 || row.imagem3 || row.image_3 || row[7]),
+            imagem_4: cleanCell(row.imagem_4 || row.imagem4 || row.image_4 || row[8]),
+            novidade: parseOptionalBoolean(row.novidade ?? row.novo ?? row[9], false),
+            ativo: parseOptionalBoolean(row.ativo ?? row[10], true),
+            documento: session.loginDocumento || session.documento,
+            acesso: session.loginAcesso || session.email || session.telefone
+          };
+
+          if (!payload.nome) {
+            skipped += 1;
+            continue;
+          }
+
+          await saveImportedProduct(payload);
+          created += 1;
+        }
+
+        return { created, skipped };
+      }
+
+      async function saveImportedProduct(payload) {
+        const response = await fetch("/.netlify/functions/store-products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Nao foi possivel importar o produto.");
+        }
+
+        return data.produto;
+      }
+
       function parseCsv(text) {
         const lines = String(text || "")
           .split(/\r?\n/)
@@ -1288,7 +1789,7 @@
 
         const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ";" : ",";
         const header = parseCsvLine(lines[0], delimiter).map((value) => normalizeName(value));
-        const hasHeader = header.includes("categoria") || header.includes("subcategoria");
+        const hasHeader = ["categoria", "subcategoria", "nome", "produto", "preco", "descricao"].some((key) => header.includes(key));
         const start = hasHeader ? 1 : 0;
 
         return lines.slice(start).map((line) => {
@@ -1352,7 +1853,38 @@
       function onlyDigits(value) {
         return String(value || "").replace(/\D/g, "");
       }
+
+      function categoryNameById(id) {
+        if (!id) return "";
+        return categoriesCache.find((category) => category.id === id)?.nome || "";
+      }
+
+      function formatMoney(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "R$ 0,00";
+        return new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        }).format(number);
+      }
+
+      function formatPlainMoney(value) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return "";
+        return number.toFixed(2).replace(".", ",");
+      }
+
+      function parseBooleanCell(value) {
+        const normalized = normalizeName(value);
+        if (["sim", "s", "true", "1", "ativo", "ativa", "novo", "novidade"].includes(normalized)) return true;
+        if (["nao", "n", "false", "0", "inativo", "inativa"].includes(normalized)) return false;
+        return Boolean(value);
+      }
+
+      function parseOptionalBoolean(value, fallback) {
+        if (value === undefined || value === null || String(value).trim() === "") return fallback;
+        return parseBooleanCell(value);
+      }
     </script>
   </body>
 </html>
- 
