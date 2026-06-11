@@ -31,7 +31,8 @@
       }
 
       button,
-      input {
+      input,
+      select {
         font: inherit;
       }
 
@@ -135,11 +136,13 @@
         font-size: 13px;
       }
 
-      .field input {
+      .field input,
+      .field select {
         width: 100%;
         border: 1px solid #cbd9df;
         border-radius: 7px;
         padding: 12px 13px;
+        background: #fff;
       }
 
       .button {
@@ -337,6 +340,48 @@
         margin-top: 14px;
       }
 
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .list-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: #fff;
+      }
+
+      .list-item.sub {
+        margin-left: 18px;
+        background: #f8fbfc;
+      }
+
+      .list-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .list-title strong {
+        overflow-wrap: anywhere;
+      }
+
+      .badge {
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: 12px;
+        font-weight: 900;
+        background: #e1f7eb;
+        color: #0d6d48;
+      }
+
+      .badge.off {
+        background: #fee8c8;
+        color: #8a4b0b;
+      }
+
       .color-field {
         display: grid;
         gap: 6px;
@@ -475,7 +520,7 @@
             </article>
             <article class="card">
               <span>Categorias</span>
-              <strong>0</strong>
+              <strong id="categoryCount">0</strong>
             </article>
             <article class="card">
               <span>Pedidos</span>
@@ -507,6 +552,36 @@
           </div>
 
           <div id="moduleNotice" class="notice hidden"></div>
+
+          <section id="categoriesEditor" class="editor hidden">
+            <div class="editor-header">
+              <h3>Categorias e subcategorias</h3>
+              <button id="closeCategoriesButton" class="button secondary small" type="button">Fechar</button>
+            </div>
+            <div class="editor-body">
+              <form id="categoryForm">
+                <div class="field">
+                  <label for="categoryName">Nome da categoria ou subcategoria</label>
+                  <input id="categoryName" name="nome" required placeholder="Ex.: Eletronicos, Limpeza, Ofertas">
+                </div>
+                <div class="field">
+                  <label for="parentCategory">Categoria superior</label>
+                  <select id="parentCategory" name="parent_id">
+                    <option value="">Categoria principal</option>
+                  </select>
+                </div>
+                <button id="saveCategoryButton" class="button" type="submit">Cadastrar categoria</button>
+                <div id="categoryStatus" class="status"></div>
+              </form>
+
+              <aside>
+                <h3>Categorias cadastradas</h3>
+                <div id="categoriesList" class="list">
+                  <div class="notice">Nenhuma categoria cadastrada ainda.</div>
+                </div>
+              </aside>
+            </div>
+          </section>
 
           <section id="storeSettingsEditor" class="editor hidden">
             <div class="editor-header">
@@ -611,8 +686,10 @@
       const logoutButton = document.getElementById("logoutButton");
       const storeDataModule = document.getElementById("storeDataModule");
       const settingsEditor = document.getElementById("storeSettingsEditor");
+      const categoriesEditor = document.getElementById("categoriesEditor");
       const moduleNotice = document.getElementById("moduleNotice");
       const closeSettingsButton = document.getElementById("closeSettingsButton");
+      const closeCategoriesButton = document.getElementById("closeCategoriesButton");
       const settingsForm = document.getElementById("storeSettingsForm");
       const settingsStatus = document.getElementById("settingsStatus");
       const createSettingsButton = document.getElementById("createSettingsButton");
@@ -625,7 +702,15 @@
       const previewName = document.getElementById("previewName");
       const previewCover = document.getElementById("previewCover");
       const previewButton = document.getElementById("previewButton");
+      const categoryForm = document.getElementById("categoryForm");
+      const categoryNameInput = document.getElementById("categoryName");
+      const parentCategorySelect = document.getElementById("parentCategory");
+      const saveCategoryButton = document.getElementById("saveCategoryButton");
+      const categoryStatus = document.getElementById("categoryStatus");
+      const categoriesList = document.getElementById("categoriesList");
+      const categoryCount = document.getElementById("categoryCount");
       const sessionKey = "choque_store_session";
+      let categoriesCache = [];
 
       documentInput.addEventListener("input", () => {
         documentInput.value = onlyDigits(documentInput.value);
@@ -669,6 +754,7 @@
         storeView.classList.add("hidden");
         storeNav.classList.add("hidden");
         settingsEditor.classList.add("hidden");
+        categoriesEditor.classList.add("hidden");
         loginView.classList.remove("hidden");
         form.reset();
         loginStatus.textContent = "";
@@ -682,6 +768,10 @@
 
       closeSettingsButton.addEventListener("click", () => {
         settingsEditor.classList.add("hidden");
+      });
+
+      closeCategoriesButton.addEventListener("click", () => {
+        categoriesEditor.classList.add("hidden");
       });
 
       settingsForm.addEventListener("input", updatePreview);
@@ -740,6 +830,80 @@
         }
       });
 
+      categoryForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const session = getSession();
+        if (!session) return;
+
+        categoryStatus.textContent = "Salvando categoria...";
+        saveCategoryButton.disabled = true;
+
+        const payload = {
+          ...Object.fromEntries(new FormData(categoryForm).entries()),
+          documento: session.loginDocumento || session.documento,
+          acesso: session.loginAcesso || session.email || session.telefone
+        };
+
+        try {
+          const response = await fetch("/.netlify/functions/store-categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel salvar a categoria.");
+          }
+
+          categoryNameInput.value = "";
+          parentCategorySelect.value = "";
+          categoryStatus.textContent = "Categoria cadastrada com sucesso.";
+          await loadCategories();
+        } catch (error) {
+          categoryStatus.textContent = error.message;
+        } finally {
+          saveCategoryButton.disabled = false;
+        }
+      });
+
+      categoriesList.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-toggle-category]");
+        if (!button) return;
+
+        const session = getSession();
+        const category = categoriesCache.find((item) => item.id === button.dataset.toggleCategory);
+        if (!session || !category) return;
+
+        button.disabled = true;
+        categoryStatus.textContent = category.ativo ? "Desativando categoria..." : "Ativando categoria...";
+
+        try {
+          const response = await fetch("/.netlify/functions/store-categories", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: category.id,
+              ativo: !category.ativo,
+              documento: session.loginDocumento || session.documento,
+              acesso: session.loginAcesso || session.email || session.telefone
+            })
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel alterar a categoria.");
+          }
+
+          categoryStatus.textContent = "Categoria atualizada com sucesso.";
+          await loadCategories();
+        } catch (error) {
+          categoryStatus.textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
+      });
+
       const storedSession = sessionStorage.getItem(sessionKey);
       if (storedSession) {
         try {
@@ -768,12 +932,23 @@
 
         if (section === "dados") {
           moduleNotice.classList.add("hidden");
+          categoriesEditor.classList.add("hidden");
           settingsEditor.classList.remove("hidden");
           settingsEditor.scrollIntoView({ behavior: "smooth", block: "start" });
           return;
         }
 
+        if (section === "categorias") {
+          moduleNotice.classList.add("hidden");
+          settingsEditor.classList.add("hidden");
+          categoriesEditor.classList.remove("hidden");
+          categoriesEditor.scrollIntoView({ behavior: "smooth", block: "start" });
+          loadCategories();
+          return;
+        }
+
         settingsEditor.classList.add("hidden");
+        categoriesEditor.classList.add("hidden");
         moduleNotice.classList.remove("hidden");
         moduleNotice.textContent = getSectionMessage(section);
         moduleNotice.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -835,6 +1010,88 @@
         } catch {
           return null;
         }
+      }
+
+      async function loadCategories() {
+        const session = getSession();
+        if (!session) return;
+
+        const params = new URLSearchParams({
+          documento: session.loginDocumento || session.documento,
+          acesso: session.loginAcesso || session.email || session.telefone || ""
+        });
+
+        try {
+          categoryStatus.textContent = "Carregando categorias...";
+          const response = await fetch(`/.netlify/functions/store-categories?${params.toString()}`);
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel carregar categorias.");
+          }
+
+          categoriesCache = data.categorias || [];
+          renderCategories();
+          categoryCount.textContent = String(categoriesCache.length);
+          categoryStatus.textContent = "";
+        } catch (error) {
+          categoryStatus.textContent = error.message;
+        }
+      }
+
+      function renderCategories() {
+        const roots = categoriesCache.filter((category) => !category.parent_id);
+        const children = categoriesCache.filter((category) => category.parent_id);
+
+        parentCategorySelect.innerHTML = '<option value="">Categoria principal</option>';
+        roots
+          .filter((category) => category.ativo)
+          .forEach((category) => {
+            const option = document.createElement("option");
+            option.value = category.id;
+            option.textContent = category.nome;
+            parentCategorySelect.appendChild(option);
+          });
+
+        if (!categoriesCache.length) {
+          categoriesList.innerHTML = '<div class="notice">Nenhuma categoria cadastrada ainda.</div>';
+          return;
+        }
+
+        categoriesList.innerHTML = roots.map((category) => {
+          const subs = children.filter((child) => child.parent_id === category.id);
+          return `
+            ${renderCategoryItem(category, false)}
+            ${subs.map((child) => renderCategoryItem(child, true)).join("")}
+          `;
+        }).join("");
+      }
+
+      function renderCategoryItem(category, isSubcategory) {
+        const statusClass = category.ativo ? "badge" : "badge off";
+        const statusText = category.ativo ? "Ativa" : "Inativa";
+        const actionText = category.ativo ? "Desativar" : "Ativar";
+
+        return `
+          <div class="list-item${isSubcategory ? " sub" : ""}">
+            <div class="list-title">
+              <strong>${isSubcategory ? "Subcategoria: " : "Categoria: "}${escapeHtml(category.nome)}</strong>
+              <span class="${statusClass}">${statusText}</span>
+            </div>
+            <div class="actions-row">
+              <button class="button secondary small" type="button" data-toggle-category="${category.id}">${actionText}</button>
+            </div>
+          </div>
+        `;
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
       function onlyDigits(value) {
