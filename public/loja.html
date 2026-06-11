@@ -86,6 +86,11 @@
         padding: 12px;
         text-align: left;
         font-weight: 800;
+        cursor: pointer;
+      }
+
+      .nav button.active {
+        background: rgba(255, 255, 255, 0.18);
       }
 
       .main {
@@ -245,6 +250,16 @@
         border-radius: 8px;
         background: #fff;
         overflow: hidden;
+      }
+
+      .notice {
+        margin-top: 16px;
+        border: 1px solid #cfe8dc;
+        border-radius: 8px;
+        background: #eefaf4;
+        color: #114333;
+        padding: 16px 18px;
+        line-height: 1.45;
       }
 
       .editor-header {
@@ -410,11 +425,11 @@
         <h1>Area da Loja</h1>
         <p>Acesse o ambiente da empresa assinante para montar catalogo, produtos e pedidos.</p>
         <div id="storeNav" class="nav hidden">
-          <button type="button">Dados da loja</button>
-          <button type="button">Categorias</button>
-          <button type="button">Produtos</button>
-          <button type="button">Pedidos</button>
-          <button type="button">Catalogo publico</button>
+          <button type="button" data-section="dados">Dados da loja</button>
+          <button type="button" data-section="categorias">Categorias</button>
+          <button type="button" data-section="produtos">Produtos</button>
+          <button type="button" data-section="pedidos">Pedidos</button>
+          <button type="button" data-section="catalogo">Catalogo publico</button>
         </div>
       </aside>
 
@@ -466,23 +481,25 @@
           </div>
 
           <div class="workspace">
-            <article id="storeDataModule" class="module action">
+            <article id="storeDataModule" class="module action" data-section="dados">
               <h3>Dados da loja</h3>
               <p>Cadastrar nome publico, WhatsApp, site, Instagram, logo, capa e cores da loja.</p>
             </article>
-            <article class="module">
+            <article class="module action" data-section="produtos">
               <h3>Produtos</h3>
               <p>Proximo passo: cadastrar produtos, preco, descricao, imagens e novidades.</p>
             </article>
-            <article class="module">
+            <article class="module action" data-section="categorias">
               <h3>Categorias</h3>
               <p>Proximo passo: organizar categorias e subcategorias do catalogo.</p>
             </article>
-            <article class="module">
+            <article class="module action" data-section="catalogo">
               <h3>Catalogo publico</h3>
               <p>Proximo passo: gerar o link publico da loja para receber pedidos dos clientes.</p>
             </article>
           </div>
+
+          <div id="moduleNotice" class="notice hidden"></div>
 
           <section id="storeSettingsEditor" class="editor hidden">
             <div class="editor-header">
@@ -584,6 +601,7 @@
       const logoutButton = document.getElementById("logoutButton");
       const storeDataModule = document.getElementById("storeDataModule");
       const settingsEditor = document.getElementById("storeSettingsEditor");
+      const moduleNotice = document.getElementById("moduleNotice");
       const closeSettingsButton = document.getElementById("closeSettingsButton");
       const settingsForm = document.getElementById("storeSettingsForm");
       const settingsStatus = document.getElementById("settingsStatus");
@@ -645,9 +663,10 @@
         loginStatus.textContent = "";
       });
 
-      storeDataModule.addEventListener("click", () => {
-        settingsEditor.classList.remove("hidden");
-        settingsEditor.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.querySelectorAll("[data-section]").forEach((button) => {
+        button.addEventListener("click", () => {
+          openSection(button.dataset.section);
+        });
       });
 
       closeSettingsButton.addEventListener("click", () => {
@@ -723,6 +742,35 @@
         storeView.classList.remove("hidden");
         storeNav.classList.remove("hidden");
         loadSettings(empresa);
+      }
+
+      function openSection(section) {
+        document.querySelectorAll("#storeNav button").forEach((button) => {
+          button.classList.toggle("active", button.dataset.section === section);
+        });
+
+        if (section === "dados") {
+          moduleNotice.classList.add("hidden");
+          settingsEditor.classList.remove("hidden");
+          settingsEditor.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+
+        settingsEditor.classList.add("hidden");
+        moduleNotice.classList.remove("hidden");
+        moduleNotice.textContent = getSectionMessage(section);
+        moduleNotice.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function getSectionMessage(section) {
+        const messages = {
+          categorias: "Categorias sera o proximo modulo: vamos cadastrar categorias e subcategorias para organizar o catalogo.",
+          produtos: "Produtos sera o proximo modulo: vamos cadastrar nome, preco, descricao, imagens, novidades e status do produto.",
+          pedidos: "Pedidos sera ativado depois do catalogo publico, para registrar compras recebidas pelos clientes.",
+          catalogo: "Catalogo publico sera gerado apos os dados da loja, categorias e produtos estarem cadastrados."
+        };
+
+        return messages[section] || "Modulo em preparacao.";
       }
 
       async function loadSettings(session) {
