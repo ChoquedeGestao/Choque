@@ -94,7 +94,7 @@ async function getSettings(supabaseUrl, serviceRoleKey, empresaId) {
 }
 
 async function saveSettings(supabaseUrl, serviceRoleKey, settings) {
-  const rows = await supabaseRequest(supabaseUrl, serviceRoleKey, "lojas_config", {
+  const rows = await supabaseRequest(supabaseUrl, serviceRoleKey, "lojas_config?on_conflict=empresa_id", {
     method: "POST",
     headers: {
       Prefer: "resolution=merge-duplicates,return=representation"
