@@ -1,5 +1,5 @@
 exports.handler = async (event) => {
-  if (!["GET", "POST", "PATCH"].includes(event.httpMethod)) {
+  if (!["GET", "POST", "PATCH", "DELETE"].includes(event.httpMethod)) {
     return json(405, { ok: false, error: "Metodo nao permitido." });
   }
 
@@ -27,6 +27,11 @@ exports.handler = async (event) => {
 
     if (event.httpMethod === "POST") {
       const categoria = await createCategory(supabaseUrl, serviceRoleKey, empresa.id, requestData);
+      return json(200, { ok: true, empresa, categoria });
+    }
+
+    if (event.httpMethod === "DELETE") {
+      const categoria = await deleteCategory(supabaseUrl, serviceRoleKey, empresa.id, requestData);
       return json(200, { ok: true, empresa, categoria });
     }
 
@@ -153,6 +158,31 @@ async function updateCategory(supabaseUrl, serviceRoleKey, empresaId, payload) {
         Prefer: "return=representation"
       },
       body: JSON.stringify(update)
+    }
+  );
+
+  if (!rows[0]) {
+    throw new Error("Categoria nao encontrada.");
+  }
+
+  return rows[0];
+}
+
+async function deleteCategory(supabaseUrl, serviceRoleKey, empresaId, payload) {
+  const id = cleanText(payload.id);
+  if (!id) {
+    throw new Error("Categoria nao informada.");
+  }
+
+  const rows = await supabaseRequest(
+    supabaseUrl,
+    serviceRoleKey,
+    `categorias?id=eq.${encodeURIComponent(id)}&empresa_id=eq.${encodeURIComponent(empresaId)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Prefer: "return=representation"
+      }
     }
   );
 
