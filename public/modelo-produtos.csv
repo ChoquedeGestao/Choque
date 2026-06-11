@@ -1,0 +1,4 @@
+nome,descricao,preco,categoria,subcategoria,imagem_1,imagem_2,imagem_3,imagem_4,novidade,ativo
+Trava de seguranca,Trava reforcada para bicicleta e moto,29.90,Acessorios Para Bicicletas e Motos,,https://exemplo.com/imagem1.jpg,,,,sim,sim
+Adaptador de tomadas,Adaptador pratico para uso diario,17.50,Adaptador de Tomadas,,https://exemplo.com/adaptador.jpg,,,,nao,sim
+Produto infantil,Produto com alta procura,42.00,Produtos Infantis,,https://exemplo.com/produto.jpg,,,,sim,sim
