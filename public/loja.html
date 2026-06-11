@@ -152,6 +152,11 @@
         color: #263942;
       }
 
+      .button.small {
+        padding: 9px 11px;
+        font-size: 13px;
+      }
+
       .status {
         min-height: 22px;
         margin-top: 14px;
@@ -225,6 +230,160 @@
         line-height: 1.45;
       }
 
+      .module.action {
+        cursor: pointer;
+      }
+
+      .module.action:hover {
+        border-color: rgba(14, 122, 95, 0.45);
+        box-shadow: 0 10px 24px rgba(16, 39, 51, 0.08);
+      }
+
+      .editor {
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      .editor-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: center;
+        padding: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .editor-header h3 {
+        margin: 0;
+      }
+
+      .editor-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+        gap: 18px;
+        padding: 18px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .form-grid .wide {
+        grid-column: 1 / -1;
+      }
+
+      .palette-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .palette {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .palette strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .swatches {
+        display: flex;
+        gap: 8px;
+      }
+
+      .swatch {
+        width: 34px;
+        height: 24px;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+      }
+
+      .color-fields {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .color-field {
+        display: grid;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .color-field input {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 4px;
+      }
+
+      .preview {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .preview-cover {
+        min-height: 110px;
+        padding: 18px;
+        color: #fff;
+        background: var(--preview-primary, #0f2733);
+      }
+
+      .preview-cover h4 {
+        margin: 0 0 8px;
+        font-size: 24px;
+      }
+
+      .preview-cover p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .preview-content {
+        padding: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .preview-product {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .preview-price {
+        color: var(--preview-secondary, #0e7a5f);
+        font-weight: 900;
+      }
+
+      .preview-pill {
+        border-radius: 999px;
+        background: var(--preview-accent, #f7bd16);
+        color: #102733;
+        padding: 6px 10px;
+        font-weight: 900;
+        font-size: 12px;
+      }
+
       @media (max-width: 900px) {
         .page {
           grid-template-columns: 1fr;
@@ -235,7 +394,10 @@
         }
 
         .cards,
-        .workspace {
+        .workspace,
+        .editor-body,
+        .form-grid,
+        .color-fields {
           grid-template-columns: 1fr;
         }
       }
@@ -304,9 +466,9 @@
           </div>
 
           <div class="workspace">
-            <article class="module">
+            <article id="storeDataModule" class="module action">
               <h3>Dados da loja</h3>
-              <p>Proximo passo: cadastrar nome publico, WhatsApp, site, logo e imagem de capa.</p>
+              <p>Cadastrar nome publico, WhatsApp, site, Instagram, logo, capa e cores da loja.</p>
             </article>
             <article class="module">
               <h3>Produtos</h3>
@@ -321,6 +483,91 @@
               <p>Proximo passo: gerar o link publico da loja para receber pedidos dos clientes.</p>
             </article>
           </div>
+
+          <section id="storeSettingsEditor" class="editor hidden">
+            <div class="editor-header">
+              <h3>Dados e cores da loja</h3>
+              <button id="closeSettingsButton" class="button secondary small" type="button">Fechar</button>
+            </div>
+            <div class="editor-body">
+              <form id="storeSettingsForm">
+                <div class="form-grid">
+                  <div class="field wide">
+                    <label for="publicName">Nome publico da loja</label>
+                    <input id="publicName" name="nome_publico" required placeholder="Nome que o cliente vera no catalogo">
+                  </div>
+                  <div class="field">
+                    <label for="storeWhatsapp">WhatsApp da loja</label>
+                    <input id="storeWhatsapp" name="whatsapp" inputmode="numeric" placeholder="DDD + numero">
+                  </div>
+                  <div class="field">
+                    <label for="storeSite">Site da loja</label>
+                    <input id="storeSite" name="site" placeholder="https://sualoja.com.br">
+                  </div>
+                  <div class="field">
+                    <label for="storeInstagram">Instagram</label>
+                    <input id="storeInstagram" name="instagram" placeholder="@perfil ou https://instagram.com/perfil">
+                  </div>
+                  <div class="field">
+                    <label for="storeLogo">Logo da loja</label>
+                    <input id="storeLogo" name="logo_url" placeholder="Cole o link da imagem">
+                  </div>
+                  <div class="field">
+                    <label for="storeCover">Imagem de capa</label>
+                    <input id="storeCover" name="capa_url" placeholder="Cole o link da imagem">
+                  </div>
+                </div>
+
+                <h3>Paleta de cores</h3>
+                <div class="palette-list">
+                  <button class="palette" type="button" data-primary="#0f2733" data-secondary="#0e7a5f" data-accent="#f7bd16">
+                    <strong>Profissional</strong>
+                    <span class="swatches"><span class="swatch" style="background:#0f2733"></span><span class="swatch" style="background:#0e7a5f"></span><span class="swatch" style="background:#f7bd16"></span></span>
+                  </button>
+                  <button class="palette" type="button" data-primary="#1f2937" data-secondary="#2563eb" data-accent="#f97316">
+                    <strong>Comercial</strong>
+                    <span class="swatches"><span class="swatch" style="background:#1f2937"></span><span class="swatch" style="background:#2563eb"></span><span class="swatch" style="background:#f97316"></span></span>
+                  </button>
+                  <button class="palette" type="button" data-primary="#27272a" data-secondary="#be123c" data-accent="#facc15">
+                    <strong>Vitrine</strong>
+                    <span class="swatches"><span class="swatch" style="background:#27272a"></span><span class="swatch" style="background:#be123c"></span><span class="swatch" style="background:#facc15"></span></span>
+                  </button>
+                </div>
+
+                <div class="color-fields">
+                  <label class="color-field" for="primaryColor">Cor principal
+                    <input id="primaryColor" name="cor_primaria" type="color" value="#0f2733">
+                  </label>
+                  <label class="color-field" for="secondaryColor">Cor secundaria
+                    <input id="secondaryColor" name="cor_secundaria" type="color" value="#0e7a5f">
+                  </label>
+                  <label class="color-field" for="accentColor">Cor destaque
+                    <input id="accentColor" name="cor_destaque" type="color" value="#f7bd16">
+                  </label>
+                </div>
+
+                <button id="saveSettingsButton" class="button" type="submit">Salvar dados da loja</button>
+                <div id="settingsStatus" class="status"></div>
+              </form>
+
+              <aside class="preview" aria-label="Previa da loja">
+                <div id="previewCover" class="preview-cover">
+                  <h4 id="previewName">Minha loja</h4>
+                  <p>Previa das cores no catalogo publico.</p>
+                </div>
+                <div class="preview-content">
+                  <div class="preview-product">
+                    <div>
+                      <strong>Produto em destaque</strong>
+                      <div class="preview-price">R$ 29,90</div>
+                    </div>
+                    <span class="preview-pill">Novo</span>
+                  </div>
+                  <button id="previewButton" class="button" type="button">Comprar pelo WhatsApp</button>
+                </div>
+              </aside>
+            </div>
+          </section>
         </section>
       </main>
     </div>
@@ -335,6 +582,20 @@
       const documentInput = document.getElementById("document");
       const accessInput = document.getElementById("access");
       const logoutButton = document.getElementById("logoutButton");
+      const storeDataModule = document.getElementById("storeDataModule");
+      const settingsEditor = document.getElementById("storeSettingsEditor");
+      const closeSettingsButton = document.getElementById("closeSettingsButton");
+      const settingsForm = document.getElementById("storeSettingsForm");
+      const settingsStatus = document.getElementById("settingsStatus");
+      const saveSettingsButton = document.getElementById("saveSettingsButton");
+      const publicNameInput = document.getElementById("publicName");
+      const storeWhatsappInput = document.getElementById("storeWhatsapp");
+      const primaryColorInput = document.getElementById("primaryColor");
+      const secondaryColorInput = document.getElementById("secondaryColor");
+      const accentColorInput = document.getElementById("accentColor");
+      const previewName = document.getElementById("previewName");
+      const previewCover = document.getElementById("previewCover");
+      const previewButton = document.getElementById("previewButton");
       const sessionKey = "choque_store_session";
 
       documentInput.addEventListener("input", () => {
@@ -360,8 +621,13 @@
             throw new Error(data.error || "Nao foi possivel acessar a loja.");
           }
 
-          sessionStorage.setItem(sessionKey, JSON.stringify(data.empresa));
-          openStore(data.empresa);
+          const session = {
+            ...data.empresa,
+            loginDocumento: payload.documento,
+            loginAcesso: payload.acesso
+          };
+          sessionStorage.setItem(sessionKey, JSON.stringify(session));
+          openStore(session);
         } catch (error) {
           loginStatus.textContent = error.message;
         } finally {
@@ -373,9 +639,69 @@
         sessionStorage.removeItem(sessionKey);
         storeView.classList.add("hidden");
         storeNav.classList.add("hidden");
+        settingsEditor.classList.add("hidden");
         loginView.classList.remove("hidden");
         form.reset();
         loginStatus.textContent = "";
+      });
+
+      storeDataModule.addEventListener("click", () => {
+        settingsEditor.classList.remove("hidden");
+        settingsEditor.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      closeSettingsButton.addEventListener("click", () => {
+        settingsEditor.classList.add("hidden");
+      });
+
+      settingsForm.addEventListener("input", updatePreview);
+
+      storeWhatsappInput.addEventListener("input", () => {
+        storeWhatsappInput.value = onlyDigits(storeWhatsappInput.value);
+      });
+
+      document.querySelectorAll(".palette").forEach((button) => {
+        button.addEventListener("click", () => {
+          primaryColorInput.value = button.dataset.primary;
+          secondaryColorInput.value = button.dataset.secondary;
+          accentColorInput.value = button.dataset.accent;
+          updatePreview();
+        });
+      });
+
+      settingsForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const session = getSession();
+        if (!session) return;
+
+        settingsStatus.textContent = "Salvando dados da loja...";
+        saveSettingsButton.disabled = true;
+
+        const payload = {
+          ...Object.fromEntries(new FormData(settingsForm).entries()),
+          documento: session.loginDocumento || session.documento,
+          acesso: session.loginAcesso || session.email || session.telefone
+        };
+
+        try {
+          const response = await fetch("/.netlify/functions/store-settings", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel salvar os dados da loja.");
+          }
+
+          settingsStatus.textContent = "Dados da loja salvos com sucesso.";
+          applySettings(data.configuracao);
+        } catch (error) {
+          settingsStatus.textContent = error.message;
+        } finally {
+          saveSettingsButton.disabled = false;
+        }
       });
 
       const storedSession = sessionStorage.getItem(sessionKey);
@@ -390,9 +716,60 @@
       function openStore(empresa) {
         document.getElementById("storeName").textContent = empresa.nome || "Minha loja";
         document.getElementById("storeInfo").textContent = `${empresa.responsavel || "Responsavel"} | ${empresa.email || empresa.telefone || ""}`;
+        publicNameInput.value = empresa.nome || "";
+        storeWhatsappInput.value = empresa.telefone || "";
+        updatePreview();
         loginView.classList.add("hidden");
         storeView.classList.remove("hidden");
         storeNav.classList.remove("hidden");
+        loadSettings(empresa);
+      }
+
+      async function loadSettings(session) {
+        const params = new URLSearchParams({
+          documento: session.loginDocumento || session.documento,
+          acesso: session.loginAcesso || session.email || session.telefone || ""
+        });
+
+        try {
+          const response = await fetch(`/.netlify/functions/store-settings?${params.toString()}`);
+          const data = await response.json();
+          if (response.ok && data.configuracao) {
+            applySettings(data.configuracao);
+          }
+        } catch {
+          settingsStatus.textContent = "";
+        }
+      }
+
+      function applySettings(settings) {
+        publicNameInput.value = settings.nome_publico || publicNameInput.value;
+        storeWhatsappInput.value = settings.whatsapp || storeWhatsappInput.value;
+        document.getElementById("storeSite").value = settings.site || "";
+        document.getElementById("storeInstagram").value = settings.instagram || "";
+        document.getElementById("storeLogo").value = settings.logo_url || "";
+        document.getElementById("storeCover").value = settings.capa_url || "";
+        primaryColorInput.value = settings.cor_primaria || "#0f2733";
+        secondaryColorInput.value = settings.cor_secundaria || "#0e7a5f";
+        accentColorInput.value = settings.cor_destaque || "#f7bd16";
+        updatePreview();
+      }
+
+      function updatePreview() {
+        previewName.textContent = publicNameInput.value || "Minha loja";
+        previewCover.style.setProperty("--preview-primary", primaryColorInput.value);
+        previewCover.style.background = primaryColorInput.value;
+        previewButton.style.background = secondaryColorInput.value;
+        document.documentElement.style.setProperty("--preview-secondary", secondaryColorInput.value);
+        document.documentElement.style.setProperty("--preview-accent", accentColorInput.value);
+      }
+
+      function getSession() {
+        try {
+          return JSON.parse(sessionStorage.getItem(sessionKey) || "null");
+        } catch {
+          return null;
+        }
       }
 
       function onlyDigits(value) {
