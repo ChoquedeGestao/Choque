@@ -330,6 +330,13 @@
         margin-top: 14px;
       }
 
+      .actions-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
       .color-field {
         display: grid;
         gap: 6px;
@@ -563,7 +570,10 @@
                   </label>
                 </div>
 
-                <button id="saveSettingsButton" class="button" type="submit">Salvar dados da loja</button>
+                <div class="actions-row">
+                  <button id="createSettingsButton" class="button" type="submit" data-method="POST">Cadastrar dados da loja</button>
+                  <button id="updateSettingsButton" class="button secondary" type="submit" data-method="PATCH">Alterar dados da loja</button>
+                </div>
                 <div id="settingsStatus" class="status"></div>
               </form>
 
@@ -605,7 +615,8 @@
       const closeSettingsButton = document.getElementById("closeSettingsButton");
       const settingsForm = document.getElementById("storeSettingsForm");
       const settingsStatus = document.getElementById("settingsStatus");
-      const saveSettingsButton = document.getElementById("saveSettingsButton");
+      const createSettingsButton = document.getElementById("createSettingsButton");
+      const updateSettingsButton = document.getElementById("updateSettingsButton");
       const publicNameInput = document.getElementById("publicName");
       const storeWhatsappInput = document.getElementById("storeWhatsapp");
       const primaryColorInput = document.getElementById("primaryColor");
@@ -693,8 +704,11 @@
         const session = getSession();
         if (!session) return;
 
-        settingsStatus.textContent = "Salvando dados da loja...";
-        saveSettingsButton.disabled = true;
+        const method = event.submitter?.dataset.method || "PATCH";
+        const isUpdate = method === "PATCH";
+        settingsStatus.textContent = isUpdate ? "Alterando dados da loja..." : "Cadastrando dados da loja...";
+        createSettingsButton.disabled = true;
+        updateSettingsButton.disabled = true;
 
         const payload = {
           ...Object.fromEntries(new FormData(settingsForm).entries()),
@@ -704,7 +718,7 @@
 
         try {
           const response = await fetch("/.netlify/functions/store-settings", {
-            method: "PATCH",
+            method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
           });
@@ -714,12 +728,15 @@
             throw new Error(data.error || "Nao foi possivel salvar os dados da loja.");
           }
 
-          settingsStatus.textContent = "Dados da loja salvos com sucesso.";
+          settingsStatus.textContent = isUpdate
+            ? "Dados da loja alterados com sucesso."
+            : "Dados da loja cadastrados com sucesso.";
           applySettings(data.configuracao);
         } catch (error) {
           settingsStatus.textContent = error.message;
         } finally {
-          saveSettingsButton.disabled = false;
+          createSettingsButton.disabled = false;
+          updateSettingsButton.disabled = false;
         }
       });
 
