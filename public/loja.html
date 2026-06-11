@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Choque de Gestao | Area da Loja</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #102733;
+        background: #f3f7fa;
+        --ink: #102733;
+        --green: #0e7a5f;
+        --blue: #0e46d8;
+        --yellow: #f7bd16;
+        --muted: #5d707a;
+        --line: #dbe7ed;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(115deg, rgba(14, 70, 216, 0.08), rgba(14, 122, 95, 0.08)),
+          #f3f7fa;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+      }
+
+      .sidebar {
+        background: #0f2733;
+        color: #fff;
+        padding: 26px 18px;
+      }
+
+      .brand-mark {
+        width: 46px;
+        height: 46px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: var(--yellow);
+        color: var(--ink);
+        font-weight: 900;
+        margin-bottom: 14px;
+      }
+
+      .sidebar h1 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.2;
+      }
+
+      .sidebar p {
+        margin: 8px 0 22px;
+        color: #b8c9d1;
+        line-height: 1.45;
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.16);
+      }
+
+      .nav button {
+        border: 0;
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        padding: 12px;
+        text-align: left;
+        font-weight: 800;
+      }
+
+      .main {
+        padding: clamp(22px, 4vw, 42px);
+        min-width: 0;
+      }
+
+      .hero {
+        max-width: 1040px;
+      }
+
+      .hero h2 {
+        margin: 0;
+        font-size: clamp(32px, 5vw, 58px);
+        line-height: 1;
+      }
+
+      .hero p {
+        max-width: 660px;
+        color: #435964;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      .panel {
+        max-width: 560px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 24px;
+        box-shadow: 0 24px 60px rgba(16, 39, 51, 0.13);
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+        margin-bottom: 14px;
+      }
+
+      .field label {
+        font-weight: 800;
+        font-size: 13px;
+      }
+
+      .field input {
+        width: 100%;
+        border: 1px solid #cbd9df;
+        border-radius: 7px;
+        padding: 12px 13px;
+      }
+
+      .button {
+        border: 0;
+        border-radius: 7px;
+        background: var(--green);
+        color: #fff;
+        padding: 12px 16px;
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      .button.secondary {
+        background: #e7eef1;
+        color: #263942;
+      }
+
+      .status {
+        min-height: 22px;
+        margin-top: 14px;
+        color: #8a4b0b;
+        line-height: 1.45;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 22px;
+      }
+
+      .topbar h2 {
+        margin: 0;
+        font-size: 30px;
+      }
+
+      .topbar p {
+        margin: 6px 0 0;
+        color: var(--muted);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 18px;
+      }
+
+      .card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 28px;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .module {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 18px;
+        min-height: 150px;
+      }
+
+      .module h3 {
+        margin: 0 0 8px;
+      }
+
+      .module p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      @media (max-width: 900px) {
+        .page {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          padding: 18px;
+        }
+
+        .cards,
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <aside class="sidebar">
+        <div class="brand-mark">CG</div>
+        <h1>Area da Loja</h1>
+        <p>Acesse o ambiente da empresa assinante para montar catalogo, produtos e pedidos.</p>
+        <div id="storeNav" class="nav hidden">
+          <button type="button">Dados da loja</button>
+          <button type="button">Categorias</button>
+          <button type="button">Produtos</button>
+          <button type="button">Pedidos</button>
+          <button type="button">Catalogo publico</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section id="loginView" class="hero">
+          <h2>Entre no ambiente da sua loja.</h2>
+          <p>Informe o CPF/CNPJ e o e-mail ou WhatsApp cadastrado. O acesso sera liberado somente para empresas com assinatura ativa.</p>
+
+          <form id="storeLoginForm" class="panel">
+            <div class="field">
+              <label for="document">CPF/CNPJ</label>
+              <input id="document" name="documento" inputmode="numeric" required placeholder="Somente numeros">
+            </div>
+            <div class="field">
+              <label for="access">E-mail ou WhatsApp</label>
+              <input id="access" name="acesso" required placeholder="E-mail ou DDD + numero">
+            </div>
+            <button id="loginButton" class="button" type="submit">Acessar loja</button>
+            <div id="loginStatus" class="status"></div>
+          </form>
+        </section>
+
+        <section id="storeView" class="hidden">
+          <div class="topbar">
+            <div>
+              <h2 id="storeName">Minha loja</h2>
+              <p id="storeInfo">Assinatura ativa.</p>
+            </div>
+            <button id="logoutButton" class="button secondary" type="button">Sair</button>
+          </div>
+
+          <div class="cards">
+            <article class="card">
+              <span>Produtos</span>
+              <strong>0</strong>
+            </article>
+            <article class="card">
+              <span>Categorias</span>
+              <strong>0</strong>
+            </article>
+            <article class="card">
+              <span>Pedidos</span>
+              <strong>0</strong>
+            </article>
+            <article class="card">
+              <span>Status</span>
+              <strong>Ativa</strong>
+            </article>
+          </div>
+
+          <div class="workspace">
+            <article class="module">
+              <h3>Dados da loja</h3>
+              <p>Proximo passo: cadastrar nome publico, WhatsApp, site, logo e imagem de capa.</p>
+            </article>
+            <article class="module">
+              <h3>Produtos</h3>
+              <p>Proximo passo: cadastrar produtos, preco, descricao, imagens e novidades.</p>
+            </article>
+            <article class="module">
+              <h3>Categorias</h3>
+              <p>Proximo passo: organizar categorias e subcategorias do catalogo.</p>
+            </article>
+            <article class="module">
+              <h3>Catalogo publico</h3>
+              <p>Proximo passo: gerar o link publico da loja para receber pedidos dos clientes.</p>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const loginView = document.getElementById("loginView");
+      const storeView = document.getElementById("storeView");
+      const storeNav = document.getElementById("storeNav");
+      const form = document.getElementById("storeLoginForm");
+      const loginButton = document.getElementById("loginButton");
+      const loginStatus = document.getElementById("loginStatus");
+      const documentInput = document.getElementById("document");
+      const accessInput = document.getElementById("access");
+      const logoutButton = document.getElementById("logoutButton");
+      const sessionKey = "choque_store_session";
+
+      documentInput.addEventListener("input", () => {
+        documentInput.value = onlyDigits(documentInput.value);
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        loginStatus.textContent = "Validando assinatura...";
+        loginButton.disabled = true;
+
+        const payload = Object.fromEntries(new FormData(form).entries());
+
+        try {
+          const response = await fetch("/.netlify/functions/store-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel acessar a loja.");
+          }
+
+          sessionStorage.setItem(sessionKey, JSON.stringify(data.empresa));
+          openStore(data.empresa);
+        } catch (error) {
+          loginStatus.textContent = error.message;
+        } finally {
+          loginButton.disabled = false;
+        }
+      });
+
+      logoutButton.addEventListener("click", () => {
+        sessionStorage.removeItem(sessionKey);
+        storeView.classList.add("hidden");
+        storeNav.classList.add("hidden");
+        loginView.classList.remove("hidden");
+        form.reset();
+        loginStatus.textContent = "";
+      });
+
+      const storedSession = sessionStorage.getItem(sessionKey);
+      if (storedSession) {
+        try {
+          openStore(JSON.parse(storedSession));
+        } catch {
+          sessionStorage.removeItem(sessionKey);
+        }
+      }
+
+      function openStore(empresa) {
+        document.getElementById("storeName").textContent = empresa.nome || "Minha loja";
+        document.getElementById("storeInfo").textContent = `${empresa.responsavel || "Responsavel"} | ${empresa.email || empresa.telefone || ""}`;
+        loginView.classList.add("hidden");
+        storeView.classList.remove("hidden");
+        storeNav.classList.remove("hidden");
+      }
+
+      function onlyDigits(value) {
+        return String(value || "").replace(/\D/g, "");
+      }
+    </script>
+  </body>
+</html>
