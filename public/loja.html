@@ -560,6 +560,7 @@
             </div>
             <div class="editor-body">
               <form id="categoryForm">
+                <input id="categoryId" name="id" type="hidden">
                 <div class="field">
                   <label for="categoryName">Nome da categoria ou subcategoria</label>
                   <input id="categoryName" name="nome" required placeholder="Ex.: Eletronicos, Limpeza, Ofertas">
@@ -570,7 +571,18 @@
                     <option value="">Categoria principal</option>
                   </select>
                 </div>
-                <button id="saveCategoryButton" class="button" type="submit">Cadastrar categoria</button>
+                <div class="actions-row">
+                  <button id="saveCategoryButton" class="button" type="submit">Cadastrar categoria</button>
+                  <button id="cancelCategoryEditButton" class="button secondary hidden" type="button">Cancelar alteracao</button>
+                </div>
+                <div class="notice">
+                  Para importar por planilha, use o modelo CSV com as colunas categoria e subcategoria.
+                  <div class="actions-row">
+                    <a class="button secondary small" href="/modelo-categorias.csv" download>Baixar modelo</a>
+                    <label class="button secondary small" for="categoryImportFile">Importar planilha</label>
+                    <input id="categoryImportFile" class="hidden" type="file" accept=".csv,text/csv">
+                  </div>
+                </div>
                 <div id="categoryStatus" class="status"></div>
               </form>
 
@@ -703,9 +715,12 @@
       const previewCover = document.getElementById("previewCover");
       const previewButton = document.getElementById("previewButton");
       const categoryForm = document.getElementById("categoryForm");
+      const categoryIdInput = document.getElementById("categoryId");
       const categoryNameInput = document.getElementById("categoryName");
       const parentCategorySelect = document.getElementById("parentCategory");
       const saveCategoryButton = document.getElementById("saveCategoryButton");
+      const cancelCategoryEditButton = document.getElementById("cancelCategoryEditButton");
+      const categoryImportFile = document.getElementById("categoryImportFile");
       const categoryStatus = document.getElementById("categoryStatus");
       const categoriesList = document.getElementById("categoriesList");
       const categoryCount = document.getElementById("categoryCount");
@@ -774,6 +789,10 @@
         categoriesEditor.classList.add("hidden");
       });
 
+      cancelCategoryEditButton.addEventListener("click", () => {
+        resetCategoryForm();
+      });
+
       settingsForm.addEventListener("input", updatePreview);
 
       storeWhatsappInput.addEventListener("input", () => {
@@ -835,7 +854,8 @@
         const session = getSession();
         if (!session) return;
 
-        categoryStatus.textContent = "Salvando categoria...";
+        const isEditing = Boolean(categoryIdInput.value);
+        categoryStatus.textContent = isEditing ? "Alterando categoria..." : "Salvando categoria...";
         saveCategoryButton.disabled = true;
 
         const payload = {
@@ -846,7 +866,7 @@
 
         try {
           const response = await fetch("/.netlify/functions/store-categories", {
-            method: "POST",
+            method: isEditing ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
           });
@@ -856,9 +876,10 @@
             throw new Error(data.error || "Nao foi possivel salvar a categoria.");
           }
 
-          categoryNameInput.value = "";
-          parentCategorySelect.value = "";
-          categoryStatus.textContent = "Categoria cadastrada com sucesso.";
+          resetCategoryForm();
+          categoryStatus.textContent = isEditing
+            ? "Categoria alterada com sucesso."
+            : "Categoria cadastrada com sucesso.";
           await loadCategories();
         } catch (error) {
           categoryStatus.textContent = error.message;
@@ -868,6 +889,63 @@
       });
 
       categoriesList.addEventListener("click", async (event) => {
+        const editButton = event.target.closest("[data-edit-category]");
+        if (editButton) {
+          const category = categoriesCache.find((item) => item.id === editButton.dataset.editCategory);
+          if (!category) return;
+
+          categoryIdInput.value = category.id;
+          categoryNameInput.value = category.nome || "";
+          parentCategorySelect.value = category.parent_id || "";
+          saveCategoryButton.textContent = "Salvar alteracao";
+          cancelCategoryEditButton.classList.remove("hidden");
+          categoryStatus.textContent = "Edite os dados e clique em Salvar alteracao.";
+          categoryNameInput.focus();
+          return;
+        }
+
+        const deleteButton = event.target.closest("[data-delete-category]");
+        if (deleteButton) {
+          const session = getSession();
+          const category = categoriesCache.find((item) => item.id === deleteButton.dataset.deleteCategory);
+          if (!session || !category) return;
+
+          const hasChildren = categoriesCache.some((item) => item.parent_id === category.id);
+          const message = hasChildren
+            ? "Excluir esta categoria tambem exclui as subcategorias ligadas a ela. Deseja continuar?"
+            : "Deseja excluir esta categoria?";
+          if (!window.confirm(message)) return;
+
+          deleteButton.disabled = true;
+          categoryStatus.textContent = "Excluindo categoria...";
+
+          try {
+            const response = await fetch("/.netlify/functions/store-categories", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: category.id,
+                documento: session.loginDocumento || session.documento,
+                acesso: session.loginAcesso || session.email || session.telefone
+              })
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.error || "Nao foi possivel excluir a categoria.");
+            }
+
+            resetCategoryForm();
+            categoryStatus.textContent = "Categoria excluida com sucesso.";
+            await loadCategories();
+          } catch (error) {
+            categoryStatus.textContent = error.message;
+          } finally {
+            deleteButton.disabled = false;
+          }
+          return;
+        }
+
         const button = event.target.closest("[data-toggle-category]");
         if (!button) return;
 
@@ -901,6 +979,32 @@
           categoryStatus.textContent = error.message;
         } finally {
           button.disabled = false;
+        }
+      });
+
+      categoryImportFile.addEventListener("change", async () => {
+        const file = categoryImportFile.files?.[0];
+        if (!file) return;
+
+        const session = getSession();
+        if (!session) return;
+
+        categoryStatus.textContent = "Importando planilha...";
+        categoryImportFile.disabled = true;
+        saveCategoryButton.disabled = true;
+
+        try {
+          const rows = parseCsv(await file.text());
+          const result = await importCategories(rows, session);
+          categoryStatus.textContent = `Importacao concluida: ${result.created} cadastradas, ${result.skipped} ignoradas.`;
+          resetCategoryForm();
+          await loadCategories();
+        } catch (error) {
+          categoryStatus.textContent = error.message;
+        } finally {
+          categoryImportFile.value = "";
+          categoryImportFile.disabled = false;
+          saveCategoryButton.disabled = false;
         }
       });
 
@@ -1079,10 +1183,161 @@
               <span class="${statusClass}">${statusText}</span>
             </div>
             <div class="actions-row">
+              <button class="button secondary small" type="button" data-edit-category="${category.id}">Alterar</button>
               <button class="button secondary small" type="button" data-toggle-category="${category.id}">${actionText}</button>
+              <button class="button secondary small" type="button" data-delete-category="${category.id}">Excluir</button>
             </div>
           </div>
         `;
+      }
+
+      function resetCategoryForm() {
+        categoryForm.reset();
+        categoryIdInput.value = "";
+        saveCategoryButton.textContent = "Cadastrar categoria";
+        cancelCategoryEditButton.classList.add("hidden");
+      }
+
+      async function importCategories(rows, session) {
+        if (!rows.length) {
+          throw new Error("A planilha nao possui categorias para importar.");
+        }
+
+        const roots = new Map();
+        const children = new Map();
+        categoriesCache.forEach((category) => {
+          const key = normalizeName(category.nome);
+          if (!category.parent_id) {
+            roots.set(key, category);
+          } else {
+            children.set(`${category.parent_id}:${key}`, category);
+          }
+        });
+
+        let created = 0;
+        let skipped = 0;
+
+        for (const row of rows) {
+          const categoryName = cleanCell(row.categoria || row.category || row[0]);
+          const subcategoryName = cleanCell(row.subcategoria || row.subcategory || row[1]);
+
+          if (!categoryName) {
+            skipped += 1;
+            continue;
+          }
+
+          let root = roots.get(normalizeName(categoryName));
+          if (!root) {
+            root = await saveImportedCategory({
+              nome: categoryName,
+              parent_id: "",
+              documento: session.loginDocumento || session.documento,
+              acesso: session.loginAcesso || session.email || session.telefone
+            });
+            roots.set(normalizeName(categoryName), root);
+            categoriesCache.push(root);
+            created += 1;
+          } else {
+            skipped += 1;
+          }
+
+          if (!subcategoryName) continue;
+
+          const childKey = `${root.id}:${normalizeName(subcategoryName)}`;
+          if (children.has(childKey)) {
+            skipped += 1;
+            continue;
+          }
+
+          const child = await saveImportedCategory({
+            nome: subcategoryName,
+            parent_id: root.id,
+            documento: session.loginDocumento || session.documento,
+            acesso: session.loginAcesso || session.email || session.telefone
+          });
+          children.set(childKey, child);
+          categoriesCache.push(child);
+          created += 1;
+        }
+
+        return { created, skipped };
+      }
+
+      async function saveImportedCategory(payload) {
+        const response = await fetch("/.netlify/functions/store-categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Nao foi possivel importar a categoria.");
+        }
+
+        return data.categoria;
+      }
+
+      function parseCsv(text) {
+        const lines = String(text || "")
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+
+        if (!lines.length) return [];
+
+        const delimiter = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ";" : ",";
+        const header = parseCsvLine(lines[0], delimiter).map((value) => normalizeName(value));
+        const hasHeader = header.includes("categoria") || header.includes("subcategoria");
+        const start = hasHeader ? 1 : 0;
+
+        return lines.slice(start).map((line) => {
+          const values = parseCsvLine(line, delimiter);
+          if (!hasHeader) return values;
+
+          return header.reduce((row, key, index) => {
+            row[key] = values[index] || "";
+            return row;
+          }, {});
+        });
+      }
+
+      function parseCsvLine(line, delimiter) {
+        const values = [];
+        let current = "";
+        let quoted = false;
+
+        for (let index = 0; index < line.length; index += 1) {
+          const char = line[index];
+          const next = line[index + 1];
+
+          if (char === '"' && quoted && next === '"') {
+            current += '"';
+            index += 1;
+          } else if (char === '"') {
+            quoted = !quoted;
+          } else if (char === delimiter && !quoted) {
+            values.push(current.trim());
+            current = "";
+          } else {
+            current += char;
+          }
+        }
+
+        values.push(current.trim());
+        return values;
+      }
+
+      function cleanCell(value) {
+        return String(value || "").trim();
+      }
+
+      function normalizeName(value) {
+        return String(value || "")
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
       }
 
       function escapeHtml(value) {
@@ -1100,4 +1355,3 @@
     </script>
   </body>
 </html>
- 
