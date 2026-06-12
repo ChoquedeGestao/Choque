@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Catalogo da loja</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #102733;
+        background: #f3f7fa;
+        --primary: #0f2733;
+        --secondary: #0e7a5f;
+        --accent: #f7bd16;
+        --line: #dbe7ed;
+        --muted: #546a75;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #f3f7fa;
+      }
+
+      .hero {
+        min-height: 320px;
+        background: linear-gradient(135deg, var(--primary), #183f50);
+        color: #fff;
+        display: grid;
+        align-items: end;
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero.has-cover {
+        background-position: center;
+        background-size: cover;
+      }
+
+      .hero.has-cover::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(15, 39, 51, 0.82), rgba(15, 39, 51, 0.28));
+      }
+
+      .hero-content {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+      }
+
+      .logo {
+        width: 62px;
+        height: 62px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: var(--primary);
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        overflow: hidden;
+      }
+
+      .logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(34px, 7vw, 72px);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .hero p {
+        max-width: 680px;
+        margin: 18px 0 0;
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 18px;
+        line-height: 1.45;
+      }
+
+      .shell {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .toolbar {
+        margin-top: -34px;
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px 220px;
+        gap: 12px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        box-shadow: 0 20px 50px rgba(16, 39, 51, 0.12);
+      }
+
+      input,
+      select {
+        width: 100%;
+        border: 1px solid #cbd9df;
+        border-radius: 7px;
+        padding: 13px 14px;
+        background: #fff;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        padding: 28px 0 46px;
+      }
+
+      .product {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+      }
+
+      .photo {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        background: #e8f0f4;
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        overflow: hidden;
+      }
+
+      .photo img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 10px;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+      }
+
+      .photo img.active {
+        opacity: 1;
+      }
+
+      .tag {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--primary);
+        padding: 7px 10px;
+        font-weight: 900;
+        font-size: 12px;
+      }
+
+      .body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex: 1;
+      }
+
+      .category {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .product h2 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.1;
+      }
+
+      .price {
+        color: var(--secondary);
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .description {
+        color: #344a54;
+        line-height: 1.45;
+        flex: 1;
+      }
+
+      .button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 46px;
+        border-radius: 7px;
+        background: var(--secondary);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 900;
+        padding: 12px 14px;
+      }
+
+      .empty,
+      .error {
+        margin: 28px 0 46px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 22px;
+        color: var(--muted);
+      }
+
+      .footer {
+        border-top: 1px solid var(--line);
+        background: #fff;
+        padding: 22px 0;
+        color: var(--muted);
+      }
+
+      .footer a {
+        color: var(--secondary);
+        font-weight: 800;
+      }
+
+      @media (max-width: 860px) {
+        .toolbar {
+          grid-template-columns: 1fr;
+        }
+
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 560px) {
+        .hero {
+          min-height: 280px;
+          padding: 22px 16px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="hero" class="hero">
+      <div class="hero-content">
+        <div class="brand">
+          <div id="logo" class="logo">BT</div>
+          <div>
+            <strong id="storeName">Catalogo</strong>
+            <div id="storeContact"></div>
+          </div>
+        </div>
+        <h1 id="headline">Catalogo da loja</h1>
+        <p>Escolha seus produtos e chame a loja pelo WhatsApp para concluir o pedido.</p>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="toolbar" aria-label="Filtros do catalogo">
+        <input id="searchInput" placeholder="Buscar no catalogo">
+        <select id="categoryFilter">
+          <option value="">Todas categorias</option>
+        </select>
+        <select id="subcategoryFilter">
+          <option value="">Todas subcategorias</option>
+        </select>
+      </section>
+
+      <section id="productsGrid" class="grid"></section>
+      <div id="catalogMessage" class="empty">Carregando catalogo...</div>
+    </main>
+
+    <footer class="footer">
+      <div class="shell" id="footerLinks"></div>
+    </footer>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const loja = params.get("loja");
+      const productsGrid = document.getElementById("productsGrid");
+      const catalogMessage = document.getElementById("catalogMessage");
+      const searchInput = document.getElementById("searchInput");
+      const categoryFilter = document.getElementById("categoryFilter");
+      const subcategoryFilter = document.getElementById("subcategoryFilter");
+      let catalog = null;
+
+      searchInput.addEventListener("input", renderProducts);
+      categoryFilter.addEventListener("change", () => {
+        renderSubcategoryOptions();
+        renderProducts();
+      });
+      subcategoryFilter.addEventListener("change", renderProducts);
+
+      loadCatalog();
+
+      async function loadCatalog() {
+        if (!loja) {
+          showError("Link do catalogo incompleto.");
+          return;
+        }
+
+        try {
+          const response = await fetch(`/.netlify/functions/public-catalog?loja=${encodeURIComponent(loja)}`);
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Nao foi possivel abrir o catalogo.");
+          }
+
+          catalog = data;
+          applyStore(data.configuracao || {}, data.empresa || {});
+          renderCategoryOptions();
+          renderProducts();
+        } catch (error) {
+          showError(error.message);
+        }
+      }
+
+      function applyStore(settings, empresa) {
+        const name = settings.nome_publico || empresa.nome || "Catalogo da loja";
+        document.title = `${name} | Catalogo`;
+        document.getElementById("storeName").textContent = name;
+        document.getElementById("headline").textContent = name;
+
+        setCssColor("--primary", settings.cor_primaria, "#0f2733");
+        setCssColor("--secondary", settings.cor_secundaria, "#0e7a5f");
+        setCssColor("--accent", settings.cor_destaque, "#f7bd16");
+
+        const hero = document.getElementById("hero");
+        if (settings.capa_url) {
+          hero.classList.add("has-cover");
+          hero.style.backgroundImage = `url("${settings.capa_url}")`;
+        }
+
+        const logo = document.getElementById("logo");
+        if (settings.logo_url) {
+          logo.innerHTML = `<img src="${escapeHtml(settings.logo_url)}" alt="${escapeHtml(name)}">`;
+        } else {
+          logo.textContent = initials(name);
+        }
+
+        const contact = [];
+        if (settings.whatsapp) contact.push(`WhatsApp: ${settings.whatsapp}`);
+        if (settings.site) contact.push(settings.site);
+        document.getElementById("storeContact").textContent = contact.join(" | ");
+
+        const links = [];
+        if (settings.site) links.push(`<a href="${safeUrl(settings.site)}" target="_blank" rel="noreferrer">Site</a>`);
+        if (settings.instagram) links.push(`<a href="${instagramUrl(settings.instagram)}" target="_blank" rel="noreferrer">Instagram</a>`);
+        if (settings.whatsapp) links.push(`<a href="${waUrl(settings.whatsapp, `Ola, vim pelo catalogo da ${name}.`)}" target="_blank" rel="noreferrer">WhatsApp</a>`);
+        document.getElementById("footerLinks").innerHTML = links.length ? links.join(" &middot; ") : name;
+      }
+
+      function renderCategoryOptions() {
+        const roots = (catalog.categorias || []).filter((category) => !category.parent_id);
+        categoryFilter.innerHTML = '<option value="">Todas categorias</option>';
+        roots.forEach((category) => {
+          categoryFilter.insertAdjacentHTML("beforeend", `<option value="${category.id}">${escapeHtml(category.nome)}</option>`);
+        });
+        renderSubcategoryOptions();
+      }
+
+      function renderSubcategoryOptions() {
+        const parentId = categoryFilter.value;
+        const children = (catalog.categorias || []).filter((category) => category.parent_id && (!parentId || category.parent_id === parentId));
+        subcategoryFilter.innerHTML = '<option value="">Todas subcategorias</option>';
+        children.forEach((category) => {
+          subcategoryFilter.insertAdjacentHTML("beforeend", `<option value="${category.id}">${escapeHtml(category.nome)}</option>`);
+        });
+      }
+
+      function renderProducts() {
+        const search = normalize(searchInput.value);
+        const categoryId = categoryFilter.value;
+        const subcategoryId = subcategoryFilter.value;
+        const products = (catalog.produtos || []).filter((product) => {
+          const productCategory = product.categoria_id || "";
+          const productSubcategory = product.subcategoria_id || "";
+          const categoryMatch = !categoryId || productCategory === categoryId;
+          const subcategoryMatch = !subcategoryId || productSubcategory === subcategoryId;
+          const text = normalize(`${product.nome} ${product.descricao || ""} ${categoryName(product.subcategoria_id) || categoryName(product.categoria_id)}`);
+          return categoryMatch && subcategoryMatch && (!search || text.includes(search));
+        });
+
+        productsGrid.innerHTML = products.map(renderProduct).join("");
+        catalogMessage.classList.toggle("hidden", products.length > 0);
+        catalogMessage.textContent = products.length ? "" : "Nenhum produto encontrado para este filtro.";
+        startCarousels();
+      }
+
+      function renderProduct(product) {
+        const images = [product.imagem_1, product.imagem_2, product.imagem_3, product.imagem_4].filter(Boolean);
+        const category = categoryName(product.subcategoria_id) || categoryName(product.categoria_id) || "Produto";
+        const storeName = catalog.configuracao?.nome_publico || catalog.empresa?.nome || "loja";
+        const whatsapp = catalog.configuracao?.whatsapp || catalog.empresa?.telefone || "";
+        const message = `Ola, tenho interesse no produto ${product.nome} da ${storeName}.`;
+
+        return `
+          <article class="product">
+            <div class="photo" data-carousel>
+              ${images.length ? images.map((image, index) => `<img class="${index === 0 ? "active" : ""}" src="${escapeHtml(image)}" alt="${escapeHtml(product.nome)}">`).join("") : "<span>Sem imagem</span>"}
+              ${product.novidade ? '<span class="tag">Novidade</span>' : ""}
+            </div>
+            <div class="body">
+              <div class="category">${escapeHtml(category)}</div>
+              <h2>${escapeHtml(product.nome)}</h2>
+              <div class="price">${formatMoney(product.preco)}</div>
+              <div class="description">${escapeHtml(product.descricao || "Produto disponivel para consulta pelo WhatsApp.")}</div>
+              <a class="button" href="${waUrl(whatsapp, message)}" target="_blank" rel="noreferrer">Comprar pelo WhatsApp</a>
+            </div>
+          </article>
+        `;
+      }
+
+      function startCarousels() {
+        document.querySelectorAll("[data-carousel]").forEach((carousel) => {
+          const images = Array.from(carousel.querySelectorAll("img"));
+          if (images.length <= 1 || carousel.dataset.started) return;
+          carousel.dataset.started = "true";
+          let index = 0;
+          setInterval(() => {
+            images[index].classList.remove("active");
+            index = (index + 1) % images.length;
+            images[index].classList.add("active");
+          }, 2600);
+        });
+      }
+
+      function categoryName(id) {
+        return (catalog.categorias || []).find((category) => category.id === id)?.nome || "";
+      }
+
+      function waUrl(phone, message) {
+        const digits = String(phone || "").replace(/\D/g, "");
+        const number = digits.length <= 11 ? `55${digits}` : digits;
+        return number ? `https://wa.me/${number}?text=${encodeURIComponent(message)}` : "#";
+      }
+
+      function safeUrl(url) {
+        const value = String(url || "").trim();
+        if (!value) return "#";
+        return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+      }
+
+      function instagramUrl(value) {
+        const text = String(value || "").trim();
+        if (/^https?:\/\//i.test(text)) return text;
+        return `https://instagram.com/${text.replace(/^@/, "")}`;
+      }
+
+      function setCssColor(name, value, fallback) {
+        const color = /^#[0-9a-f]{6}$/i.test(value || "") ? value : fallback;
+        document.documentElement.style.setProperty(name, color);
+      }
+
+      function formatMoney(value) {
+        const number = Number(value);
+        return new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        }).format(Number.isFinite(number) ? number : 0);
+      }
+
+      function normalize(value) {
+        return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      }
+
+      function initials(name) {
+        return String(name || "BT").split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toUpperCase();
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function showError(message) {
+        productsGrid.innerHTML = "";
+        catalogMessage.className = "error";
+        catalogMessage.textContent = message;
+      }
+    </script>
+  </body>
+</html>
