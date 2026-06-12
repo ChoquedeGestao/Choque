@@ -188,6 +188,16 @@
         opacity: 1;
       }
 
+      .photo .image-warning {
+        position: relative;
+        z-index: 1;
+        max-width: 82%;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.35;
+        text-align: center;
+      }
+
       .tag {
         position: absolute;
         top: 12px;
@@ -452,7 +462,7 @@
         return `
           <article class="product">
             <div class="photo" data-carousel>
-              ${images.length ? images.map((image, index) => `<img class="${index === 0 ? "active" : ""}" src="${escapeHtml(image)}" alt="${escapeHtml(product.nome)}" loading="lazy" onerror="this.remove()">`).join("") : "<span>Sem imagem</span>"}
+              ${images.length ? images.map((image, index) => `<img class="${index === 0 ? "active" : ""}" src="${escapeHtml(image)}" alt="${escapeHtml(product.nome)}" loading="lazy" onerror="imageLoadError(this)">`).join("") : '<span class="image-warning">Sem imagem cadastrada</span>'}
               ${product.novidade ? '<span class="tag">Novidade</span>' : ""}
             </div>
             <div class="body">
@@ -468,14 +478,17 @@
 
       function startCarousels() {
         document.querySelectorAll("[data-carousel]").forEach((carousel) => {
-          const images = Array.from(carousel.querySelectorAll("img"));
+          const images = Array.from(carousel.querySelectorAll("img:not([data-failed])"));
           if (images.length <= 1 || carousel.dataset.started) return;
           carousel.dataset.started = "true";
           let index = 0;
           setInterval(() => {
-            images[index].classList.remove("active");
-            index = (index + 1) % images.length;
-            images[index].classList.add("active");
+            const currentImages = Array.from(carousel.querySelectorAll("img:not([data-failed])"));
+            if (currentImages.length <= 1) return;
+            if (index >= currentImages.length) index = 0;
+            currentImages[index].classList.remove("active");
+            index = (index + 1) % currentImages.length;
+            currentImages[index].classList.add("active");
           }, 2600);
         });
       }
@@ -524,10 +537,34 @@
       function safeImageUrl(value) {
         const text = String(value || "").trim();
         if (!text) return "";
+        if (/drive\.google\.com/i.test(text)) {
+          const googleDriveMatch = text.match(/drive\.google\.com\/file\/d\/([^/]+)/i) || text.match(/[?&]id=([^&]+)/i);
+          if (googleDriveMatch) return `https://drive.google.com/uc?export=view&id=${googleDriveMatch[1]}`;
+        }
+        if (/dropbox\.com/i.test(text)) return text.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "").replace("?dl=1", "");
         if (/^https?:\/\//i.test(text)) return text;
         if (/^\/\//.test(text)) return `https:${text}`;
         if (/^www\./i.test(text)) return `https://${text}`;
         return "";
+      }
+
+      function imageLoadError(image) {
+        image.dataset.failed = "true";
+        image.classList.remove("active");
+        image.removeAttribute("src");
+
+        const carousel = image.closest("[data-carousel]");
+        if (!carousel) return;
+
+        const validImages = Array.from(carousel.querySelectorAll("img:not([data-failed])"));
+        if (validImages.length) {
+          validImages.forEach((item, index) => item.classList.toggle("active", index === 0));
+          return;
+        }
+
+        if (!carousel.querySelector(".image-warning")) {
+          carousel.insertAdjacentHTML("beforeend", '<span class="image-warning">Link informado nao abre como imagem direta.</span>');
+        }
       }
 
       function uniqueUrls(values) {
