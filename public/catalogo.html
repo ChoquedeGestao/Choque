@@ -539,13 +539,17 @@
         if (!text) return "";
         if (/drive\.google\.com/i.test(text)) {
           const googleDriveMatch = text.match(/drive\.google\.com\/file\/d\/([^/]+)/i) || text.match(/[?&]id=([^&]+)/i);
-          if (googleDriveMatch) return `https://drive.google.com/uc?export=view&id=${googleDriveMatch[1]}`;
+          if (googleDriveMatch) return imageProxyUrl(`https://drive.google.com/uc?export=view&id=${googleDriveMatch[1]}`);
         }
-        if (/dropbox\.com/i.test(text)) return text.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "").replace("?dl=1", "");
-        if (/^https?:\/\//i.test(text)) return text;
-        if (/^\/\//.test(text)) return `https:${text}`;
-        if (/^www\./i.test(text)) return `https://${text}`;
+        if (/dropbox\.com/i.test(text)) return imageProxyUrl(text.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "").replace("?dl=1", ""));
+        if (/^https?:\/\//i.test(text)) return imageProxyUrl(text);
+        if (/^\/\//.test(text)) return imageProxyUrl(`https:${text}`);
+        if (/^www\./i.test(text)) return imageProxyUrl(`https://${text}`);
         return "";
+      }
+
+      function imageProxyUrl(url) {
+        return `/.netlify/functions/image-proxy?url=${encodeURIComponent(url)}`;
       }
 
       function imageLoadError(image) {
