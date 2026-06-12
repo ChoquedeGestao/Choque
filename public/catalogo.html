@@ -39,8 +39,7 @@
       }
 
       .hero.has-cover {
-        background-position: center;
-        background-size: cover;
+        background: var(--primary);
       }
 
       .hero.has-cover::before {
@@ -48,13 +47,35 @@
         position: absolute;
         inset: 0;
         background: linear-gradient(90deg, rgba(15, 39, 51, 0.82), rgba(15, 39, 51, 0.28));
+        z-index: 1;
+      }
+
+      .hero-slides {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+
+      .hero-slide {
+        position: absolute;
+        inset: 0;
+        background-position: center;
+        background-size: cover;
+        opacity: 0;
+        transform: scale(1.02);
+        transition: opacity 0.7s ease, transform 3.5s ease;
+      }
+
+      .hero-slide.active {
+        opacity: 1;
+        transform: scale(1);
       }
 
       .hero-content {
         width: min(1120px, 100%);
         margin: 0 auto;
         position: relative;
-        z-index: 1;
+        z-index: 2;
       }
 
       .brand {
@@ -269,6 +290,7 @@
   </head>
   <body>
     <header id="hero" class="hero">
+      <div id="heroSlides" class="hero-slides" aria-hidden="true"></div>
       <div class="hero-content">
         <div class="brand">
           <div id="logo" class="logo">BT</div>
@@ -353,14 +375,20 @@
         setCssColor("--accent", settings.cor_destaque, "#f7bd16");
 
         const hero = document.getElementById("hero");
-        if (settings.capa_url) {
+        const heroImages = uniqueUrls([
+          ...imageList(settings.capa_url),
+          ...featuredProductImages()
+        ]).slice(0, 8);
+
+        if (heroImages.length) {
           hero.classList.add("has-cover");
-          hero.style.backgroundImage = `url("${settings.capa_url}")`;
+          renderHeroCarousel(heroImages);
         }
 
         const logo = document.getElementById("logo");
-        if (settings.logo_url) {
-          logo.innerHTML = `<img src="${escapeHtml(settings.logo_url)}" alt="${escapeHtml(name)}">`;
+        const logoUrl = safeImageUrl(settings.logo_url);
+        if (logoUrl) {
+          logo.innerHTML = `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(name)}">`;
         } else {
           logo.textContent = initials(name);
         }
@@ -415,7 +443,7 @@
       }
 
       function renderProduct(product) {
-        const images = [product.imagem_1, product.imagem_2, product.imagem_3, product.imagem_4].filter(Boolean);
+        const images = productImages(product);
         const category = categoryName(product.subcategoria_id) || categoryName(product.categoria_id) || "Produto";
         const storeName = catalog.configuracao?.nome_publico || catalog.empresa?.nome || "loja";
         const whatsapp = catalog.configuracao?.whatsapp || catalog.empresa?.telefone || "";
@@ -424,7 +452,7 @@
         return `
           <article class="product">
             <div class="photo" data-carousel>
-              ${images.length ? images.map((image, index) => `<img class="${index === 0 ? "active" : ""}" src="${escapeHtml(image)}" alt="${escapeHtml(product.nome)}">`).join("") : "<span>Sem imagem</span>"}
+              ${images.length ? images.map((image, index) => `<img class="${index === 0 ? "active" : ""}" src="${escapeHtml(image)}" alt="${escapeHtml(product.nome)}" loading="lazy" onerror="this.remove()">`).join("") : "<span>Sem imagem</span>"}
               ${product.novidade ? '<span class="tag">Novidade</span>' : ""}
             </div>
             <div class="body">
@@ -450,6 +478,64 @@
             images[index].classList.add("active");
           }, 2600);
         });
+      }
+
+      function renderHeroCarousel(images) {
+        const heroSlides = document.getElementById("heroSlides");
+        heroSlides.innerHTML = images.map((image, index) => `
+          <div class="hero-slide ${index === 0 ? "active" : ""}" style="background-image: url('${cssUrl(image)}')"></div>
+        `).join("");
+
+        if (images.length <= 1) return;
+
+        let index = 0;
+        setInterval(() => {
+          const slides = Array.from(heroSlides.querySelectorAll(".hero-slide"));
+          if (!slides.length) return;
+          slides[index]?.classList.remove("active");
+          index = (index + 1) % slides.length;
+          slides[index]?.classList.add("active");
+        }, 3600);
+      }
+
+      function featuredProductImages() {
+        return (catalog.produtos || [])
+          .filter((product) => product.ativo && product.novidade)
+          .flatMap(productImages)
+          .concat((catalog.produtos || []).filter((product) => product.ativo).flatMap(productImages));
+      }
+
+      function productImages(product) {
+        return uniqueUrls([
+          ...imageList(product.imagem_1),
+          ...imageList(product.imagem_2),
+          ...imageList(product.imagem_3),
+          ...imageList(product.imagem_4)
+        ]);
+      }
+
+      function imageList(value) {
+        return String(value || "")
+          .split(/[\n,;|]+/)
+          .map(safeImageUrl)
+          .filter(Boolean);
+      }
+
+      function safeImageUrl(value) {
+        const text = String(value || "").trim();
+        if (!text) return "";
+        if (/^https?:\/\//i.test(text)) return text;
+        if (/^\/\//.test(text)) return `https:${text}`;
+        if (/^www\./i.test(text)) return `https://${text}`;
+        return "";
+      }
+
+      function uniqueUrls(values) {
+        return [...new Set(values.filter(Boolean))];
+      }
+
+      function cssUrl(value) {
+        return String(value || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
       }
 
       function categoryName(id) {
