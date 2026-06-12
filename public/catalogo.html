@@ -247,12 +247,14 @@
         justify-content: center;
         align-items: center;
         min-height: 46px;
+        border: 0;
         border-radius: 7px;
         background: var(--secondary);
         color: #fff;
         text-decoration: none;
         font-weight: 900;
         padding: 12px 14px;
+        cursor: pointer;
       }
 
       .empty,
@@ -350,6 +352,11 @@
         renderProducts();
       });
       subcategoryFilter.addEventListener("change", renderProducts);
+      productsGrid.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-buy-product]");
+        if (!button) return;
+        startWhatsappPurchase(button.dataset.buyProduct);
+      });
 
       loadCatalog();
 
@@ -456,9 +463,6 @@
       function renderProduct(product) {
         const images = productImages(product);
         const category = categoryName(product.subcategoria_id) || categoryName(product.categoria_id) || "Produto";
-        const storeName = catalog.configuracao?.nome_publico || catalog.empresa?.nome || "loja";
-        const whatsapp = catalog.configuracao?.whatsapp || catalog.empresa?.telefone || "";
-        const message = `Ola, tenho interesse no produto ${product.nome} da ${storeName}.`;
 
         return `
           <article class="product">
@@ -471,10 +475,51 @@
               <h2>${escapeHtml(product.nome)}</h2>
               <div class="price">${formatMoney(product.preco)}</div>
               <div class="description">${escapeHtml(product.descricao || "Produto disponivel para consulta pelo WhatsApp.")}</div>
-              <a class="button" href="${waUrl(whatsapp, message)}" target="_blank" rel="noreferrer">Comprar pelo WhatsApp</a>
+              <button class="button" type="button" data-buy-product="${escapeHtml(product.id)}">Comprar pelo WhatsApp</button>
             </div>
           </article>
         `;
+      }
+
+      function startWhatsappPurchase(productId) {
+        const product = (catalog.produtos || []).find((item) => item.id === productId);
+        if (!product) {
+          alert("Produto nao encontrado. Atualize o catalogo e tente novamente.");
+          return;
+        }
+
+        const whatsapp = catalog.configuracao?.whatsapp || catalog.empresa?.telefone || "";
+        if (!whatsapp) {
+          alert("A loja ainda nao cadastrou WhatsApp para receber pedidos.");
+          return;
+        }
+
+        const quantityText = prompt(`Quantidade para "${product.nome}":`, "1");
+        if (quantityText === null) return;
+
+        const quantity = Number(String(quantityText).replace(",", "."));
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          alert("Informe uma quantidade valida.");
+          return;
+        }
+
+        const storeName = catalog.configuracao?.nome_publico || catalog.empresa?.nome || "loja";
+        const unitPrice = Number(product.preco) || 0;
+        const subtotal = unitPrice * quantity;
+        const category = categoryName(product.subcategoria_id) || categoryName(product.categoria_id) || "Sem categoria";
+        const message = [
+          `Ola, quero fazer um pedido na ${storeName}.`,
+          "",
+          `Produto: ${product.nome}`,
+          `Categoria: ${category}`,
+          `Quantidade: ${formatQuantity(quantity)}`,
+          `Valor unitario: ${formatMoney(unitPrice)}`,
+          `Subtotal: ${formatMoney(subtotal)}`,
+          "",
+          "Por favor, confirme a disponibilidade e a forma de entrega."
+        ].join("\n");
+
+        window.open(waUrl(whatsapp, message), "_blank", "noopener,noreferrer");
       }
 
       function startCarousels() {
@@ -613,6 +658,12 @@
           style: "currency",
           currency: "BRL"
         }).format(Number.isFinite(number) ? number : 0);
+      }
+
+      function formatQuantity(value) {
+        return new Intl.NumberFormat("pt-BR", {
+          maximumFractionDigits: 3
+        }).format(value);
       }
 
       function normalize(value) {
