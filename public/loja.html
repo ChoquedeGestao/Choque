@@ -511,6 +511,7 @@
         }
       }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   </head>
   <body>
     <div class="page">
@@ -700,11 +701,11 @@
                   <button id="cancelProductEditButton" class="button secondary hidden" type="button">Cancelar alteracao</button>
                 </div>
                 <div class="notice">
-                  Para importar por planilha, use o modelo Excel com nome, descricao, preco, categoria, subcategoria e ate 4 imagens.
+                  Para importar por planilha, use o modelo Excel. Preencha no Excel e importe o arquivo .xlsx diretamente.
                   <div class="actions-row">
                     <a class="button secondary small" href="/modelo-produtos.xlsx" download>Baixar modelo Excel</a>
                     <label class="button secondary small" for="productImportFile">Importar planilha</label>
-                    <input id="productImportFile" class="hidden" type="file" accept=".csv,text/csv">
+                    <input id="productImportFile" class="hidden" type="file" accept=".xlsx,.xls,.csv,text/csv">
                   </div>
                 </div>
                 <div id="productStatus" class="status"></div>
@@ -1312,7 +1313,7 @@
         saveProductButton.disabled = true;
 
         try {
-          const rows = parseCsv(await file.text());
+          const rows = await readProductSpreadsheet(file);
           const result = await importProducts(rows, session);
           productStatus.textContent = `Importacao concluida: ${result.created} produtos cadastrados, ${result.skipped} ignorados.`;
           resetProductForm();
@@ -1801,6 +1802,48 @@
             return row;
           }, {});
         });
+      }
+
+      async function readProductSpreadsheet(file) {
+        const name = normalizeName(file.name || "");
+        if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+          if (!window.XLSX) {
+            throw new Error("Nao foi possivel carregar o leitor de Excel. Atualize a pagina e tente novamente.");
+          }
+
+          const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: false });
+          const firstSheetName = workbook.SheetNames[0];
+          if (!firstSheetName) return [];
+
+          const matrix = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], {
+            header: 1,
+            defval: "",
+            raw: false
+          });
+
+          return rowsFromMatrix(matrix);
+        }
+
+        return parseCsv(await file.text());
+      }
+
+      function rowsFromMatrix(matrix) {
+        const rows = (matrix || [])
+          .map((row) => row.map((value) => cleanCell(value)))
+          .filter((row) => row.some(Boolean));
+
+        if (!rows.length) return [];
+
+        const header = rows[0].map((value) => normalizeName(value));
+        const hasHeader = ["categoria", "subcategoria", "nome", "produto", "preco", "descricao"].some((key) => header.includes(key));
+        const dataRows = hasHeader ? rows.slice(1) : rows;
+
+        if (!hasHeader) return dataRows;
+
+        return dataRows.map((values) => header.reduce((row, key, index) => {
+          if (key) row[key] = values[index] || "";
+          return row;
+        }, {}));
       }
 
       function parseCsvLine(line, delimiter) {
