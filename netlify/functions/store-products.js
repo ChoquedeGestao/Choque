@@ -255,9 +255,25 @@ async function supabaseRequest(supabaseUrl, serviceRoleKey, path, options = {}) 
 }
 
 function parseMoney(value) {
-  const normalized = String(value || "0")
-    .replace(/\./g, "")
-    .replace(",", ".");
+  const raw = String(value ?? "0").trim();
+  let normalized = raw
+    .replace(/\s/g, "")
+    .replace(/[R$]/gi, "")
+    .replace(/[^\d,.-]/g, "");
+
+  const hasComma = normalized.includes(",");
+  const hasDot = normalized.includes(".");
+
+  if (hasComma && hasDot) {
+    const lastComma = normalized.lastIndexOf(",");
+    const lastDot = normalized.lastIndexOf(".");
+    normalized = lastComma > lastDot
+      ? normalized.replace(/\./g, "").replace(",", ".")
+      : normalized.replace(/,/g, "");
+  } else if (hasComma) {
+    normalized = normalized.replace(/\./g, "").replace(",", ".");
+  }
+
   const number = Number(normalized);
   if (!Number.isFinite(number) || number < 0) {
     throw new Error("Informe um preco valido.");
