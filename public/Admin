@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Choque de Gestao | Admin</title>
+    <title>Choque de Gestao | Area restrita</title>
     <style>
       :root {
         color-scheme: light;
@@ -418,7 +418,7 @@
         <section id="dashboard" class="hidden">
           <div class="topbar">
             <div>
-              <h2>Painel administrativo</h2>
+              <h2>Area restrita</h2>
               <p>Monitoramento das empresas assinantes, pagamentos e eventos recebidos do Asaas.</p>
             </div>
             <div>
