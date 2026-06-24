@@ -4,3 +4,8 @@
 
 [functions]
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/area-restrita"
+  to = "/admin.html"
+  status = 200
