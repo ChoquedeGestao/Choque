@@ -3,13 +3,14 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Choque de Gestao | Admin</title>
+    <meta http-equiv="refresh" content="0; url=/cadastro.html">
+    <title>Choque de Gestao | Comece sua loja digital</title>
     <style>
       :root {
         color-scheme: light;
         font-family: Arial, Helvetica, sans-serif;
-        color: #16242c;
-        background: #f3f6f8;
+        color: #102733;
+        background: #eef5f8;
       }
 
       * {
@@ -19,893 +20,101 @@
       body {
         margin: 0;
         min-height: 100vh;
-        background: #f3f6f8;
-      }
-
-      button,
-      input,
-      select {
-        font: inherit;
-      }
-
-      .app {
-        min-height: 100vh;
-        display: grid;
-        grid-template-columns: 260px 1fr;
-      }
-
-      .sidebar {
-        background: #0f2733;
-        color: #f8fbfc;
-        padding: 24px 18px;
-      }
-
-      .brand {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-        padding-bottom: 22px;
-        margin-bottom: 22px;
-      }
-
-      .brand-mark {
-        width: 44px;
-        height: 44px;
-        border-radius: 8px;
         display: grid;
         place-items: center;
-        background: #f5b301;
-        color: #10222b;
-        font-weight: 800;
-        margin-bottom: 12px;
-      }
-
-      .brand h1 {
-        font-size: 20px;
-        line-height: 1.2;
-        margin: 0;
-      }
-
-      .brand p,
-      .nav-note {
-        margin: 8px 0 0;
-        color: #a9bdc7;
-        line-height: 1.45;
-        font-size: 13px;
-      }
-
-      .nav-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 11px 12px;
-        border-radius: 7px;
-        background: rgba(255, 255, 255, 0.08);
-        margin-bottom: 8px;
-        font-weight: 700;
-      }
-
-      .main {
-        padding: 28px;
-        min-width: 0;
-      }
-
-      .topbar {
-        display: flex;
-        justify-content: space-between;
-        gap: 18px;
-        align-items: flex-start;
-        margin-bottom: 24px;
-      }
-
-      .topbar h2 {
-        font-size: 28px;
-        margin: 0 0 6px;
-      }
-
-      .topbar p {
-        margin: 0;
-        color: #5c6b74;
-      }
-
-      .button {
-        border: 0;
-        border-radius: 7px;
-        background: #0f6f55;
-        color: #fff;
-        padding: 11px 15px;
-        cursor: pointer;
-        font-weight: 700;
-      }
-
-      .button.secondary {
-        background: #e7eef1;
-        color: #263942;
-      }
-
-      .button.small {
-        padding: 7px 10px;
-        font-size: 12px;
-      }
-
-      .button.link {
-        display: inline-flex;
-        text-decoration: none;
-      }
-
-      .panel {
-        border: 1px solid #dbe4e8;
-        border-radius: 8px;
-        background: #fff;
-        box-shadow: 0 12px 30px rgba(17, 38, 49, 0.08);
-      }
-
-      .login {
-        max-width: 520px;
         padding: 24px;
-      }
-
-      .login h2 {
-        margin: 0 0 8px;
-      }
-
-      .login p {
-        color: #5c6b74;
-        margin: 0 0 18px;
-        line-height: 1.5;
-      }
-
-      .field {
-        display: grid;
-        gap: 7px;
-        margin-bottom: 14px;
-      }
-
-      .field label {
-        font-weight: 700;
-        font-size: 13px;
-      }
-
-      .field input {
-        width: 100%;
-        border: 1px solid #cbd8dd;
-        border-radius: 7px;
-        padding: 12px;
-      }
-
-      .field select {
-        width: 100%;
-        border: 1px solid #cbd8dd;
-        border-radius: 7px;
-        padding: 12px;
-        background: #fff;
-      }
-
-      .status {
-        margin-top: 14px;
-        color: #8a4b0b;
-        font-size: 14px;
-        line-height: 1.45;
-      }
-
-      .inline-status {
-        display: block;
-        margin-top: 6px;
-        color: #8a4b0b;
-        font-size: 12px;
-      }
-
-      .action-stack {
-        display: grid;
-        gap: 6px;
-        justify-items: start;
-      }
-
-      .hidden {
-        display: none !important;
-      }
-
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 14px;
-        margin-bottom: 18px;
+        background:
+          radial-gradient(circle at top left, rgba(14, 122, 95, 0.18), transparent 34rem),
+          linear-gradient(135deg, #f8fbfc, #dfeef4);
       }
 
       .card {
-        padding: 18px;
+        width: min(560px, 100%);
+        background: #fff;
+        border: 1px solid #d8e5eb;
+        border-radius: 10px;
+        padding: 32px;
+        box-shadow: 0 24px 70px rgba(16, 39, 51, 0.14);
       }
 
-      .card span {
-        color: #5c6b74;
-        font-size: 13px;
-      }
-
-      .card strong {
-        display: block;
-        margin-top: 8px;
-        font-size: 26px;
-      }
-
-      .section {
-        margin-bottom: 18px;
-      }
-
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 14px;
-        padding: 16px 18px;
-        border-bottom: 1px solid #e2eaee;
-      }
-
-      .section-header h3 {
-        margin: 0;
-        font-size: 18px;
-      }
-
-      .company-form {
-        padding: 18px;
-        border-bottom: 1px solid #e2eaee;
-        background: #fbfcfd;
-      }
-
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-      }
-
-      .form-actions {
+      .brand {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-top: 4px;
+        gap: 14px;
+        margin-bottom: 24px;
       }
 
-      .table-wrap {
-        overflow-x: auto;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 760px;
-      }
-
-      th,
-      td {
-        text-align: left;
-        padding: 12px 14px;
-        border-bottom: 1px solid #edf2f4;
-        vertical-align: top;
-        font-size: 14px;
-      }
-
-      th {
-        color: #536873;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0;
-        background: #f8fafb;
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        border-radius: 999px;
-        padding: 4px 9px;
-        font-size: 12px;
-        font-weight: 700;
-        background: #e9eef2;
-        color: #41535c;
-      }
-
-      .badge.ativo {
-        background: #dff5ea;
-        color: #12643e;
-      }
-
-      .badge.pendente {
-        background: #fff1ce;
-        color: #835200;
-      }
-
-      .badge.inadimplente {
-        background: #ffe1dd;
-        color: #a12d21;
-      }
-
-      .badge.cancelado {
-        background: #eceff2;
-        color: #4e5d65;
-      }
-
-      .badge.incompleto {
-        background: #fff1ce;
-        color: #835200;
-      }
-
-      .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        z-index: 20;
+      .mark {
+        width: 46px;
+        height: 46px;
+        border-radius: 9px;
         display: grid;
         place-items: center;
-        padding: 18px;
-        background: rgba(9, 23, 31, 0.54);
+        background: #f7bd16;
+        font-weight: 800;
       }
 
-      .modal {
-        width: min(620px, 100%);
-        padding: 22px;
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.15;
       }
 
-      .modal h3 {
-        margin: 0 0 8px;
-        font-size: 22px;
+      p {
+        margin: 12px 0 0;
+        color: #4f6470;
+        line-height: 1.5;
       }
 
-      .modal p {
-        margin: 0 0 18px;
-        color: #5c6b74;
-        line-height: 1.45;
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
       }
 
-      .empty {
-        padding: 22px 18px;
-        color: #5c6b74;
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 18px;
+        border-radius: 7px;
+        font-weight: 700;
+        text-decoration: none;
       }
 
-      @media (max-width: 920px) {
-        .app {
-          grid-template-columns: 1fr;
-        }
-
-        .sidebar {
-          padding: 18px;
-        }
-
-        .main {
-          padding: 18px;
-        }
-
-        .topbar {
-          flex-direction: column;
-        }
-
-        .cards {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .form-grid {
-          grid-template-columns: 1fr;
-        }
+      .primary {
+        background: #0e7a5f;
+        color: #fff;
       }
 
-      @media (max-width: 560px) {
-        .cards {
-          grid-template-columns: 1fr;
-        }
+      .secondary {
+        background: #e8f0f4;
+        color: #102733;
       }
     </style>
   </head>
   <body>
-    <div class="app">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-mark">CG</div>
+    <main class="card">
+      <div class="brand">
+        <div class="mark">CG</div>
+        <div>
           <h1>Choque de Gestao</h1>
-          <p>Administracao da plataforma profissional.</p>
+          <p>Voce sera direcionado para iniciar sua adesao.</p>
         </div>
-        <div class="nav-item">Painel</div>
-        <p class="nav-note">Dados carregados do Supabase via funcoes Netlify.</p>
-      </aside>
+      </div>
 
-      <main class="main">
-        <section id="loginPanel" class="panel login">
-          <h2>Acesso administrativo</h2>
-          <p>Informe a senha administrativa configurada no Netlify para consultar empresas, pagamentos e logs.</p>
-          <form id="loginForm">
-            <div class="field">
-              <label for="adminToken">Senha administrativa</label>
-              <input id="adminToken" type="password" autocomplete="current-password" required>
-            </div>
-            <button class="button" type="submit">Entrar</button>
-          </form>
-          <div id="loginStatus" class="status"></div>
-        </section>
+      <p>Se a pagina nao abrir automaticamente, clique no botao abaixo.</p>
 
-        <section id="dashboard" class="hidden">
-          <div class="topbar">
-            <div>
-              <h2>Painel administrativo</h2>
-              <p>Monitoramento das empresas assinantes, pagamentos e eventos recebidos do Asaas.</p>
-            </div>
-            <div>
-              <button id="refreshButton" class="button" type="button">Atualizar</button>
-              <button id="logoutButton" class="button secondary" type="button">Sair</button>
-            </div>
-          </div>
-
-          <div class="cards">
-            <article class="panel card">
-              <span>Empresas</span>
-              <strong id="companyCount">0</strong>
-            </article>
-            <article class="panel card">
-              <span>Ativas</span>
-              <strong id="activeCount">0</strong>
-            </article>
-            <article class="panel card">
-              <span>Pagamentos</span>
-              <strong id="paymentCount">0</strong>
-            </article>
-            <article class="panel card">
-              <span>Eventos Asaas</span>
-              <strong id="logCount">0</strong>
-            </article>
-          </div>
-
-          <section class="panel section">
-            <div class="section-header">
-              <h3>Empresas</h3>
-              <button id="toggleCompanyForm" class="button secondary" type="button">Nova empresa</button>
-            </div>
-            <form id="companyForm" class="company-form hidden">
-              <div class="form-grid">
-                <div class="field">
-                  <label for="companyName">Nome da empresa</label>
-                  <input id="companyName" name="nome" required>
-                </div>
-                <div class="field">
-                  <label for="companyResponsible">Responsavel</label>
-                  <input id="companyResponsible" name="responsavel">
-                </div>
-                <div class="field">
-                  <label for="companyEmail">E-mail</label>
-                  <input id="companyEmail" name="email" type="email">
-                </div>
-                <div class="field">
-                  <label for="companyPhone">WhatsApp</label>
-                  <input id="companyPhone" name="telefone" inputmode="tel">
-                </div>
-                <div class="field">
-                  <label for="companyDocument">CPF/CNPJ</label>
-                  <input id="companyDocument" name="documento" inputmode="numeric">
-                </div>
-                <div class="field">
-                  <label for="companyStatus">Status inicial</label>
-                  <select id="companyStatus" name="status">
-                    <option value="pendente">Pendente</option>
-                    <option value="ativo">Ativo</option>
-                    <option value="inadimplente">Inadimplente</option>
-                    <option value="cancelado">Cancelado</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-actions">
-                <button class="button" type="submit">Salvar empresa</button>
-                <button id="cancelCompanyForm" class="button secondary" type="button">Cancelar</button>
-                <span id="companyFormStatus" class="status"></span>
-              </div>
-            </form>
-            <div id="companiesTable" class="table-wrap"></div>
-          </section>
-
-          <section class="panel section">
-            <div class="section-header">
-              <h3>Pagamentos recentes</h3>
-            </div>
-            <div id="paymentsTable" class="table-wrap"></div>
-          </section>
-
-          <section class="panel section">
-            <div class="section-header">
-              <h3>Logs do Asaas</h3>
-            </div>
-            <div id="logsTable" class="table-wrap"></div>
-          </section>
-
-          <div id="completeCompanyModal" class="modal-backdrop hidden">
-            <form id="completeCompanyForm" class="panel modal">
-              <h3>Completar cadastro</h3>
-              <p>Preencha os dados que faltam sem alterar o historico de pagamentos e assinaturas.</p>
-              <input id="completeCompanyId" name="id" type="hidden">
-              <input id="completeCompanyStatus" name="status" type="hidden">
-              <div class="form-grid">
-                <div class="field">
-                  <label for="completeCompanyName">Nome da empresa</label>
-                  <input id="completeCompanyName" name="nome" required>
-                </div>
-                <div class="field">
-                  <label for="completeCompanyResponsible">Responsavel</label>
-                  <input id="completeCompanyResponsible" name="responsavel">
-                </div>
-                <div class="field">
-                  <label for="completeCompanyDocument">CPF/CNPJ</label>
-                  <input id="completeCompanyDocument" name="documento" inputmode="numeric">
-                </div>
-                <div class="field">
-                  <label for="completeCompanyPhone">WhatsApp</label>
-                  <input id="completeCompanyPhone" name="telefone" inputmode="tel">
-                </div>
-                <div class="field">
-                  <label for="completeCompanyEmail">E-mail</label>
-                  <input id="completeCompanyEmail" name="email" type="email">
-                </div>
-              </div>
-              <div class="form-actions">
-                <button class="button" type="submit">Salvar cadastro</button>
-                <button id="cancelCompleteCompany" class="button secondary" type="button">Cancelar</button>
-                <span id="completeCompanyStatusText" class="status"></span>
-              </div>
-            </form>
-          </div>
-        </section>
-      </main>
-    </div>
+      <div class="actions">
+        <a class="primary" href="/cadastro.html">Comecar cadastro</a>
+        <a class="secondary" href="/admin.html">Acesso administrativo</a>
+      </div>
+    </main>
 
     <script>
-      const loginPanel = document.getElementById("loginPanel");
-      const dashboard = document.getElementById("dashboard");
-      const loginForm = document.getElementById("loginForm");
-      const loginStatus = document.getElementById("loginStatus");
-      const adminToken = document.getElementById("adminToken");
-      const refreshButton = document.getElementById("refreshButton");
-      const logoutButton = document.getElementById("logoutButton");
-      const toggleCompanyForm = document.getElementById("toggleCompanyForm");
-      const companyForm = document.getElementById("companyForm");
-      const cancelCompanyForm = document.getElementById("cancelCompanyForm");
-      const companyFormStatus = document.getElementById("companyFormStatus");
-      const completeCompanyModal = document.getElementById("completeCompanyModal");
-      const completeCompanyForm = document.getElementById("completeCompanyForm");
-      const cancelCompleteCompany = document.getElementById("cancelCompleteCompany");
-      const completeCompanyStatusText = document.getElementById("completeCompanyStatusText");
-      let currentCompanies = [];
-      const tokenKey = "choque_admin_token";
-
-      loginForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        sessionStorage.setItem(tokenKey, adminToken.value.trim());
-        await loadDashboard();
-      });
-
-      refreshButton.addEventListener("click", loadDashboard);
-      toggleCompanyForm.addEventListener("click", () => {
-        companyForm.classList.toggle("hidden");
-        companyFormStatus.textContent = "";
-      });
-      cancelCompanyForm.addEventListener("click", () => {
-        companyForm.reset();
-        companyForm.classList.add("hidden");
-        companyFormStatus.textContent = "";
-      });
-      companyForm.addEventListener("submit", saveCompany);
-      completeCompanyForm.addEventListener("submit", saveCompanyUpdate);
-      cancelCompleteCompany.addEventListener("click", closeCompleteCompanyModal);
-      logoutButton.addEventListener("click", () => {
-        sessionStorage.removeItem(tokenKey);
-        dashboard.classList.add("hidden");
-        loginPanel.classList.remove("hidden");
-        adminToken.value = "";
-      });
-
-      if (sessionStorage.getItem(tokenKey)) {
-        loadDashboard();
-      }
-
-      async function loadDashboard() {
-        const token = sessionStorage.getItem(tokenKey);
-        if (!token) return;
-
-        loginStatus.textContent = "Carregando dados...";
-
-        try {
-          const response = await fetch("/.netlify/functions/admin-data", {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.error || "Nao foi possivel carregar o painel.");
-          }
-
-          loginPanel.classList.add("hidden");
-          dashboard.classList.remove("hidden");
-          loginStatus.textContent = "";
-          renderSummary(data.summary);
-          renderCompanies(data.empresas);
-          renderPayments(data.pagamentos);
-          renderLogs(data.webhook_logs);
-        } catch (error) {
-          loginPanel.classList.remove("hidden");
-          dashboard.classList.add("hidden");
-          loginStatus.textContent = error.message;
-        }
-      }
-
-      function renderSummary(summary) {
-        document.getElementById("companyCount").textContent = summary.empresas;
-        document.getElementById("activeCount").textContent = summary.ativas;
-        document.getElementById("paymentCount").textContent = summary.pagamentos;
-        document.getElementById("logCount").textContent = summary.logs;
-      }
-
-      function renderCompanies(rows) {
-        currentCompanies = rows;
-        renderTable("companiesTable", rows, [
-          ["Nome", row => row.nome],
-          ["Responsavel", row => row.responsavel || "-"],
-          ["Status", row => renderCompanyStatus(row)],
-          ["Cadastro", row => renderRegistrationCell(row)],
-          ["Cliente Asaas", row => row.asaas_customer_id],
-          ["Email", row => row.email || "-"],
-          ["Atualizado", row => formatDate(row.updated_at)],
-          ["Acoes", row => renderCompanyActions(row)]
-        ]);
-      }
-
-      function renderPayments(rows) {
-        renderTable("paymentsTable", rows, [
-          ["Evento", row => row.evento],
-          ["Status", row => row.status || "-"],
-          ["Valor", row => formatMoney(row.valor)],
-          ["Pagamento Asaas", row => row.asaas_payment_id],
-          ["Link", row => renderPaymentLink(row.invoice_url)],
-          ["Criado em", row => formatDate(row.created_at)]
-        ]);
-      }
-
-      function renderLogs(rows) {
-        renderTable("logsTable", rows, [
-          ["Evento", row => row.evento],
-          ["Pagamento", row => row.asaas_payment_id || "-"],
-          ["Cliente", row => row.asaas_customer_id || "-"],
-          ["Recebido em", row => formatDate(row.created_at)]
-        ]);
-      }
-
-      function renderTable(targetId, rows, columns) {
-        const target = document.getElementById(targetId);
-        if (!rows.length) {
-          target.innerHTML = '<div class="empty">Nenhum registro encontrado.</div>';
-          return;
-        }
-
-        const header = columns.map(([label]) => `<th>${escapeHtml(label)}</th>`).join("");
-        const body = rows.map(row => {
-          return `<tr>${columns.map(([, value]) => `<td>${value(row) ?? "-"}</td>`).join("")}</tr>`;
-        }).join("");
-
-        target.innerHTML = `<table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table>`;
-      }
-
-      async function saveCompany(event) {
-        event.preventDefault();
-        const token = sessionStorage.getItem(tokenKey);
-        if (!token) return;
-
-        companyFormStatus.textContent = "Salvando...";
-        const formData = new FormData(companyForm);
-        const payload = Object.fromEntries(formData.entries());
-
-        try {
-          const response = await fetch("/.netlify/functions/admin-company", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.error || "Nao foi possivel cadastrar a empresa.");
-          }
-
-          companyForm.reset();
-          companyForm.classList.add("hidden");
-          companyFormStatus.textContent = "";
-          await loadDashboard();
-        } catch (error) {
-          companyFormStatus.textContent = error.message;
-        }
-      }
-
-      async function saveCompanyUpdate(event) {
-        event.preventDefault();
-        const token = sessionStorage.getItem(tokenKey);
-        if (!token) return;
-
-        completeCompanyStatusText.textContent = "Salvando...";
-        const formData = new FormData(completeCompanyForm);
-        const payload = Object.fromEntries(formData.entries());
-
-        try {
-          const response = await fetch("/.netlify/functions/admin-company", {
-            method: "PATCH",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.error || "Nao foi possivel atualizar a empresa.");
-          }
-
-          closeCompleteCompanyModal();
-          await loadDashboard();
-        } catch (error) {
-          completeCompanyStatusText.textContent = error.message;
-        }
-      }
-
-      function renderCompanyStatus(row) {
-        const status = `<span class="badge ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span>`;
-        if (!isCompanyIncomplete(row)) return status;
-        return `${status}<br><span class="badge incompleto">Dados incompletos</span>`;
-      }
-
-      function isCompanyIncomplete(row) {
-        return !row.responsavel || !row.email || !row.telefone || !row.documento;
-      }
-
-      function renderRegistrationCell(row) {
-        const text = isCompanyIncomplete(row) ? "Completar cadastro" : "Editar cadastro";
-        const badge = isCompanyIncomplete(row)
-          ? `<span class="badge incompleto">Dados incompletos</span>`
-          : `<span class="badge ativo">Completo</span>`;
-
-        return `
-          <div class="action-stack">
-            ${badge}
-            <button class="button small secondary" type="button" data-complete-company="${escapeHtml(row.id)}">
-              ${text}
-            </button>
-          </div>
-        `;
-      }
-
-      function renderCompanyActions(row) {
-        const completeButton = `
-          <button class="button small secondary" type="button" data-complete-company="${escapeHtml(row.id)}">
-            ${isCompanyIncomplete(row) ? "Completar cadastro" : "Editar cadastro"}
-          </button>
-        `;
-
-        if (row.asaas_subscription_id) {
-          const paymentLink = row.assinatura_invoice_url
-            ? `<a class="button small link" href="${escapeAttribute(row.assinatura_invoice_url)}" target="_blank" rel="noopener">Abrir pagamento</a>`
-            : `<span class="inline-status">Link ainda nao recebido</span>`;
-
-          return `
-            <div class="action-stack">
-              <span class="badge pendente">Assinatura criada</span>
-              ${paymentLink}
-              ${completeButton}
-            </div>
-          `;
-        }
-
-        if (row.status === "cancelado") {
-          return "-";
-        }
-
-        return `
-          <button class="button small" type="button" data-subscription-company="${escapeHtml(row.id)}">
-            Criar assinatura
-          </button>
-          ${completeButton}
-          <span class="inline-status" id="subscription-status-${escapeHtml(row.id)}"></span>
-        `;
-      }
-
-      function renderPaymentLink(url) {
-        if (!url) return "-";
-        return `<a class="button small link" href="${escapeAttribute(url)}" target="_blank" rel="noopener">Abrir</a>`;
-      }
-
-      document.addEventListener("click", async (event) => {
-        const completeButton = event.target.closest("[data-complete-company]");
-        if (completeButton) {
-          openCompleteCompanyModal(completeButton.dataset.completeCompany);
-          return;
-        }
-
-        const button = event.target.closest("[data-subscription-company]");
-        if (button) {
-          await createSubscription(button.dataset.subscriptionCompany, button);
-        }
-      });
-
-      function openCompleteCompanyModal(companyId) {
-        const company = currentCompanies.find(row => row.id === companyId);
-        if (!company) return;
-
-        document.getElementById("completeCompanyId").value = company.id || "";
-        document.getElementById("completeCompanyStatus").value = company.status || "pendente";
-        document.getElementById("completeCompanyName").value = company.nome || "";
-        document.getElementById("completeCompanyResponsible").value = company.responsavel || "";
-        document.getElementById("completeCompanyDocument").value = company.documento || "";
-        document.getElementById("completeCompanyPhone").value = company.telefone || "";
-        document.getElementById("completeCompanyEmail").value = company.email || "";
-        completeCompanyStatusText.textContent = "";
-        completeCompanyModal.classList.remove("hidden");
-      }
-
-      function closeCompleteCompanyModal() {
-        completeCompanyForm.reset();
-        completeCompanyStatusText.textContent = "";
-        completeCompanyModal.classList.add("hidden");
-      }
-
-      async function createSubscription(companyId, button) {
-        const token = sessionStorage.getItem(tokenKey);
-        if (!token) return;
-
-        const status = document.getElementById(`subscription-status-${companyId}`);
-        button.disabled = true;
-        if (status) status.textContent = "Criando assinatura...";
-
-        try {
-          const response = await fetch("/.netlify/functions/asaas-subscription", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ empresa_id: companyId })
-          });
-
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data.error || "Nao foi possivel criar a assinatura.");
-          }
-
-          if (data.invoiceUrl) {
-            window.open(data.invoiceUrl, "_blank", "noopener");
-          }
-
-          await loadDashboard();
-        } catch (error) {
-          button.disabled = false;
-          if (status) status.textContent = error.message;
-        }
-      }
-
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function escapeAttribute(value) {
-        return escapeHtml(value).replace(/`/g, "&#096;");
-      }
-
-      function formatDate(value) {
-        if (!value) return "-";
-        return new Intl.DateTimeFormat("pt-BR", {
-          dateStyle: "short",
-          timeStyle: "short"
-        }).format(new Date(value));
-      }
-
-      function formatMoney(value) {
-        const number = Number(value);
-        if (!Number.isFinite(number)) return "-";
-        return new Intl.NumberFormat("pt-BR", {
-          style: "currency",
-          currency: "BRL"
-        }).format(number);
-      }
+      window.location.replace("/cadastro.html");
     </script>
   </body>
 </html>
