@@ -257,6 +257,124 @@
         cursor: pointer;
       }
 
+      .button.secondary {
+        background: #e7eef2;
+        color: var(--primary);
+      }
+
+      .cart-panel {
+        margin-top: 16px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        box-shadow: 0 12px 30px rgba(16, 39, 51, 0.08);
+      }
+
+      .cart-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        background: rgba(15, 39, 51, 0.62);
+        display: grid;
+        place-items: center;
+        padding: 18px;
+      }
+
+      .modal-card {
+        width: min(760px, 100%);
+        max-height: min(760px, calc(100vh - 36px));
+        overflow: auto;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        box-shadow: 0 30px 80px rgba(16, 39, 51, 0.28);
+      }
+
+      .modal-header,
+      .modal-footer {
+        padding: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .modal-header h2 {
+        margin: 0;
+      }
+
+      .modal-body {
+        padding: 18px;
+      }
+
+      .modal-footer {
+        border-top: 1px solid var(--line);
+        border-bottom: 0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .field-full {
+        grid-column: 1 / -1;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-weight: 800;
+        font-size: 14px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 86px;
+        resize: vertical;
+        border: 1px solid #cbd9df;
+        border-radius: 7px;
+        padding: 13px 14px;
+        font-family: inherit;
+      }
+
+      .order-list {
+        margin: 0 0 16px;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+      }
+
+      .order-list li {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .order-total {
+        margin: 0 0 18px;
+        font-size: 22px;
+        font-weight: 900;
+        color: var(--secondary);
+      }
+
       .empty,
       .error {
         margin: 28px 0 46px;
@@ -279,6 +397,10 @@
         font-weight: 800;
       }
 
+      .hidden {
+        display: none !important;
+      }
+
       @media (max-width: 860px) {
         .toolbar {
           grid-template-columns: 1fr;
@@ -296,6 +418,16 @@
         }
 
         .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .cart-panel,
+        .order-list li {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .form-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -328,6 +460,14 @@
         </select>
       </section>
 
+      <section id="cartPanel" class="cart-panel hidden" aria-live="polite">
+        <strong id="cartSummary">Carrinho vazio</strong>
+        <div class="cart-actions">
+          <button id="checkoutButton" class="button" type="button">Fechar pedido</button>
+          <button id="clearCartButton" class="button secondary" type="button">Limpar carrinho</button>
+        </div>
+      </section>
+
       <section id="productsGrid" class="grid"></section>
       <div id="catalogMessage" class="empty">Carregando catalogo...</div>
     </main>
@@ -335,6 +475,40 @@
     <footer class="footer">
       <div class="shell" id="footerLinks"></div>
     </footer>
+
+    <div id="checkoutModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+      <form id="checkoutForm" class="modal-card">
+        <div class="modal-header">
+          <h2 id="checkoutTitle">Fechar pedido</h2>
+        </div>
+        <div class="modal-body">
+          <ul id="orderList" class="order-list"></ul>
+          <p id="orderTotal" class="order-total"></p>
+          <div class="form-grid">
+            <label>
+              Nome do comprador
+              <input id="buyerName" required placeholder="Nome completo">
+            </label>
+            <label>
+              WhatsApp do comprador
+              <input id="buyerWhatsapp" required inputmode="tel" placeholder="DDD + numero">
+            </label>
+            <label class="field-full">
+              Endereco de entrega
+              <input id="buyerAddress" placeholder="Rua, numero, bairro e cidade">
+            </label>
+            <label class="field-full">
+              Observacao
+              <textarea id="buyerNotes" placeholder="Referencia, forma de entrega ou observacao para a loja"></textarea>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelCheckoutButton" class="button secondary" type="button">Continuar comprando</button>
+          <button class="button" type="submit">Enviar pedido para WhatsApp e e-mail</button>
+        </div>
+      </form>
+    </div>
 
     <script>
       const params = new URLSearchParams(window.location.search);
@@ -344,7 +518,17 @@
       const searchInput = document.getElementById("searchInput");
       const categoryFilter = document.getElementById("categoryFilter");
       const subcategoryFilter = document.getElementById("subcategoryFilter");
+      const cartPanel = document.getElementById("cartPanel");
+      const cartSummary = document.getElementById("cartSummary");
+      const checkoutButton = document.getElementById("checkoutButton");
+      const clearCartButton = document.getElementById("clearCartButton");
+      const checkoutModal = document.getElementById("checkoutModal");
+      const checkoutForm = document.getElementById("checkoutForm");
+      const cancelCheckoutButton = document.getElementById("cancelCheckoutButton");
+      const orderList = document.getElementById("orderList");
+      const orderTotal = document.getElementById("orderTotal");
       let catalog = null;
+      let cart = [];
 
       searchInput.addEventListener("input", renderProducts);
       categoryFilter.addEventListener("change", () => {
@@ -357,6 +541,13 @@
         if (!button) return;
         startWhatsappPurchase(button.dataset.buyProduct);
       });
+      checkoutButton.addEventListener("click", openCheckout);
+      clearCartButton.addEventListener("click", clearCart);
+      cancelCheckoutButton.addEventListener("click", () => checkoutModal.classList.add("hidden"));
+      checkoutModal.addEventListener("click", (event) => {
+        if (event.target === checkoutModal) checkoutModal.classList.add("hidden");
+      });
+      checkoutForm.addEventListener("submit", sendOrderToWhatsapp);
 
       loadCatalog();
 
@@ -475,7 +666,7 @@
               <h2>${escapeHtml(product.nome)}</h2>
               <div class="price">${formatMoney(product.preco)}</div>
               <div class="description">${escapeHtml(product.descricao || "Produto disponivel para consulta pelo WhatsApp.")}</div>
-              <button class="button" type="button" data-buy-product="${escapeHtml(product.id)}">Comprar pelo WhatsApp</button>
+              <button class="button" type="button" data-buy-product="${escapeHtml(product.id)}">Comprar / adicionar ao pedido</button>
             </div>
           </article>
         `;
@@ -503,23 +694,143 @@
           return;
         }
 
+        addToCart(product, quantity);
+        const keepBuying = confirm("Produto incluido no carrinho. Deseja continuar comprando?");
+        if (!keepBuying) openCheckout();
+      }
+
+      function addToCart(product, quantity) {
+        const existing = cart.find((item) => item.product.id === product.id);
+        if (existing) {
+          existing.quantity += quantity;
+        } else {
+          cart.push({ product, quantity });
+        }
+        updateCartPanel();
+      }
+
+      function updateCartPanel() {
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const total = cartTotal();
+        cartPanel.classList.toggle("hidden", cart.length === 0);
+        cartSummary.textContent = `${formatQuantity(totalItems)} item(ns) no carrinho - Total: ${formatMoney(total)}`;
+      }
+
+      function clearCart() {
+        if (!cart.length) return;
+        if (!confirm("Deseja limpar todos os produtos do carrinho?")) return;
+        cart = [];
+        updateCartPanel();
+      }
+
+      function openCheckout() {
+        if (!cart.length) {
+          alert("Inclua pelo menos um produto no carrinho.");
+          return;
+        }
+
+        orderList.innerHTML = cart.map((item) => {
+          const product = item.product;
+          const subtotal = (Number(product.preco) || 0) * item.quantity;
+          return `
+            <li>
+              <span>
+                <strong>Produto: ${escapeHtml(product.nome)}</strong><br>
+                Quantidade: ${formatQuantity(item.quantity)}<br>
+                Preco unitario: ${formatMoney(product.preco)}
+              </span>
+              <strong>Total: ${formatMoney(subtotal)}</strong>
+            </li>
+          `;
+        }).join("");
+        orderTotal.textContent = `Total do pedido: ${formatMoney(cartTotal())}`;
+        checkoutModal.classList.remove("hidden");
+        document.getElementById("buyerName").focus();
+      }
+
+      function buildOrderMessage(buyer) {
         const storeName = catalog.configuracao?.nome_publico || catalog.empresa?.nome || "loja";
-        const unitPrice = Number(product.preco) || 0;
-        const subtotal = unitPrice * quantity;
-        const category = categoryName(product.subcategoria_id) || categoryName(product.categoria_id) || "Sem categoria";
-        const message = [
-          `Ola, quero fazer um pedido na ${storeName}.`,
+        const lines = cart.flatMap((item, index) => {
+          const product = item.product;
+          const unitPrice = Number(product.preco) || 0;
+          const subtotal = unitPrice * item.quantity;
+          const category = categoryName(product.subcategoria_id) || categoryName(product.categoria_id) || "Sem categoria";
+          return [
+            `${index + 1}. Produto: ${product.nome}`,
+            `Categoria: ${category}`,
+            `Quantidade: ${formatQuantity(item.quantity)}`,
+            `Preco unitario: ${formatMoney(unitPrice)}`,
+            `Total: ${formatMoney(subtotal)}`
+          ];
+        });
+
+        return [
+          `Ola, quero fechar um pedido na ${storeName}.`,
           "",
-          `Produto: ${product.nome}`,
-          `Categoria: ${category}`,
-          `Quantidade: ${formatQuantity(quantity)}`,
-          `Valor unitario: ${formatMoney(unitPrice)}`,
-          `Subtotal: ${formatMoney(subtotal)}`,
+          `Comprador: ${buyer.name}`,
+          `WhatsApp do comprador: ${buyer.whatsapp}`,
+          buyer.address ? `Endereco: ${buyer.address}` : "",
+          buyer.notes ? `Observacao: ${buyer.notes}` : "",
+          "",
+          "Resumo do pedido:",
+          ...lines,
+          "",
+          `Valor total do pedido: ${formatMoney(cartTotal())}`,
           "",
           "Por favor, confirme a disponibilidade e a forma de entrega."
-        ].join("\n");
+        ].filter(Boolean).join("\n");
+      }
 
+      function storeEmail() {
+        return String(catalog.configuracao?.email || catalog.empresa?.email || "").trim();
+      }
+
+      function mailtoUrl(email, subject, body) {
+        return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      }
+
+      function sendOrderToWhatsapp(event) {
+        event.preventDefault();
+        if (!cart.length) return;
+
+        const buyer = {
+          name: document.getElementById("buyerName").value.trim(),
+          whatsapp: document.getElementById("buyerWhatsapp").value.trim(),
+          address: document.getElementById("buyerAddress").value.trim(),
+          notes: document.getElementById("buyerNotes").value.trim()
+        };
+
+        if (!buyer.name || !buyer.whatsapp) {
+          alert("Informe nome e WhatsApp do comprador.");
+          return;
+        }
+
+        const whatsapp = catalog.configuracao?.whatsapp || catalog.empresa?.telefone || "";
+        if (!whatsapp) {
+          alert("A loja ainda nao cadastrou WhatsApp para receber pedidos.");
+          return;
+        }
+
+        const storeName = catalog.configuracao?.nome_publico || catalog.empresa?.nome || "loja";
+        const message = buildOrderMessage(buyer);
         window.open(waUrl(whatsapp, message), "_blank", "noopener,noreferrer");
+        const email = storeEmail();
+        if (email) {
+          window.setTimeout(() => {
+            window.open(mailtoUrl(email, `Pedido recebido - ${storeName}`, message), "_blank", "noopener,noreferrer");
+          }, 350);
+          alert("Pedido preparado para WhatsApp e e-mail da loja. Confirme o envio nas janelas abertas.");
+        } else {
+          alert("Pedido preparado para WhatsApp. A loja ainda nao cadastrou e-mail para receber copia.");
+        }
+        checkoutModal.classList.add("hidden");
+        checkoutForm.reset();
+        cart = [];
+        updateCartPanel();
+      }
+
+      function cartTotal() {
+        return cart.reduce((sum, item) => sum + ((Number(item.product.preco) || 0) * item.quantity), 0);
       }
 
       function startCarousels() {
